@@ -53,30 +53,28 @@ function timeOutCallback(room){
 
 function located_in(new_location){
 
-  console.log("Located in " + new_location);
-
-  // Deal with new location
-  // Check if new location is a room
-  for(var room_index=0; room_index<rooms.length; room_index++){
-    if(new_location === rooms[room_index].name){
-
-      // If it is a room, turn its lights on
-      // But if it's a night time only room, check if it's night time first
-      if(!rooms[room_index].nightTimeOnly || (new Date().getHours() <= 6 || new Date().getHours() >= 18)){
-        turn_all_lights_of_room_on(rooms[room_index])
-      }
-      else {
-        console.log("This room is night time only and it's not night time")
-      }
-      // clear timouts
-      clearTimeout(rooms[room_index].timeOut);
-    }
-  }
 
 
-  // need to check if changed
+  // Check if location changed
   if(location !== new_location){
 
+    // Deal with new location
+    // Check if new location is a room
+    for(var room_index=0; room_index<rooms.length; room_index++){
+      if(new_location === rooms[room_index].name){
+
+        // If it is a room, turn its lights on
+        // But if it's a night time only room, check if it's night time first
+        if(!rooms[room_index].nightTimeOnly || (new Date().getHours() <= 6 || new Date().getHours() >= 18)){
+          turn_all_lights_of_room_on(rooms[room_index])
+        }
+        else {
+          console.log("This room is night time only and it's not night time")
+        }
+        // clear timouts
+        clearTimeout(rooms[room_index].timeOut);
+      }
+    }
 
     // Deal with previous room
     // Check if previous location is a room
@@ -90,7 +88,7 @@ function located_in(new_location){
 
     // Update location
     location = new_location;
-    console.log("location has changed to " + location);
+    console.log("Location changed to " + location);
   }
 }
 
