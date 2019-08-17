@@ -9,6 +9,7 @@ exports.rooms = [
     name: "kitchen",
     motion_sensor_topics: ["motion/kitchen/status"],
     light_topics: ["light/kitchen/command"],
+    ac_command_topics: ['ac/kitchen/command'],
     nightTimeOnly: true,
   },
   {
@@ -27,6 +28,7 @@ exports.rooms = [
     name: "bedroom",
     motion_sensor_topics: ["motion/bedroom/status"],
     light_topics: ["light/bedroom/command"],
+    ac_command_topics: ['ac/bedroom/command'],
     nightTimeOnly: true,
   },
 ];

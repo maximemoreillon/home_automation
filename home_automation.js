@@ -6,9 +6,12 @@ var rooms = require('./config/rooms.js').rooms;
 
 process.env.TZ = 'Asia/Tokyo';
 
+// Parameters
 const port = 8083;
+const lights_off_delay = 1*60*1000;
+
+// User location
 var location = "unknown"; // Default location
-var lights_off_delay = 1*60*1000
 
 // Express instance
 var app = express();
@@ -45,6 +48,21 @@ function turn_all_lights_of_room_on(room){
   }
 }
 
+function turn_all_ac_off(){
+  for(var room_index=0; room_index<rooms.length; room_index++){
+    var room = rooms[room_index];
+
+    // Check if the room has one of more AC units
+    if(room.ac_command_topics){
+
+      // If so, turn all off
+      for(var topic_index=0; topic_index<room.ac_command_topics.length; topic_index++){
+        mqtt_client.publish(room.ac_command_topics[topic_index], "{'state':'OFF'}");
+      }
+    }
+  }
+}
+
 
 function timeOutCallback(room){
   // Turn off after timeout expires
@@ -53,12 +71,18 @@ function timeOutCallback(room){
 
 function located_in(new_location){
 
-
-
   // Check if location changed
   if(location !== new_location){
 
     // Deal with new location
+
+
+    //  Check if new location is 'out'
+    if(new_location === 'out'){
+      console.log('Apartment empty, turning AC units off');
+      turn_all_ac_off();
+    }
+
     // Check if new location is a room
     for(var room_index=0; room_index<rooms.length; room_index++){
       if(new_location === rooms[room_index].name){
@@ -100,7 +124,7 @@ mqtt_client.on('connect', function () {
 });
 
 
-
+// MQTT message callback
 mqtt_client.on('message', function (topic, payload) {
   console.log("[MQTT] Message arrived on " + topic + ": " + payload);
 
@@ -112,20 +136,19 @@ mqtt_client.on('message', function (topic, payload) {
   }
 });
 
-
-
 app.get('/presence', function(req, res) {
-  // RestFul API
-
-  // New logic
+  // RestFul API to update location
   if(req.query.location){
     located_in(req.query.location);
-    res.send("OK")
+    console.log("[HTTP] Location GET request");
+    res.send("OK");
   }
   else {
-    res.send("Presence not defined")
-    console.log("[HTTP] Invalid request")
+    // TODO: Send invalid code
+    res.send("Presence not defined");
+    console.log("[HTTP] Invalid request");
   }
 });
 
+// Start the web server
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
