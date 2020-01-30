@@ -89,7 +89,7 @@ function located_in(new_location){
 
         // If it is a room, turn its lights on
         // But if it's a night time only room, check if it's night time first
-        if(!rooms[room_index].nightTimeOnly || (new Date().getHours() <= 6 || new Date().getHours() >= 18)){
+        if(!rooms[room_index].nightTimeOnly || (new Date().getHours() <= 6 || new Date().getHours() >= 17)){
           turn_all_lights_of_room_on(rooms[room_index])
         }
         else {
