@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: home-automation
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: home-automation
+  template:
+    metadata:
+      labels:
+        app: home-automation
+    spec:
+      containers:
+      - name: home-automation
+        image: 192.168.1.2:5000/home-automation
+        ports:
+        - containerPort: 7073
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    run: home-automation
+  name: home-automation
+spec:
+  ports:
+  - port: 7073
+    nodePort: 30073
+  selector:
+    app: home-automation
+  type: LoadBalancer

@@ -1,26 +1,44 @@
-var mqtt = require('mqtt');
-var express = require('express');
+const mqtt = require('mqtt');
+const express = require('express');
+const socketio = require('socket.io');
+const http = require('http');
+const history = require('connect-history-api-fallback');
+const bodyParser = require("body-parser");
+const cors = require('cors');
+const path = require('path');
 
-var credentials = require('../common/credentials.js');
-var rooms = require('./config/rooms.js').rooms;
+var secrets = require('./secrets.js');
+
+var rooms = require('./config/rooms.js');
 
 process.env.TZ = 'Asia/Tokyo';
 
 // Parameters
-const port = 8083;
+const port = 7073;
 const lights_off_delay = 1*60*1000;
 
 // User location
 var location = "unknown"; // Default location
 
 // Express instance
-var app = express();
+const app = express();
+const http_server = http.Server(app);
+const io = socketio(http_server);
+const mqtt_client  = mqtt.connect('mqtt://192.168.1.2', secrets.mqtt);
+
+app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, 'dist')));
+app.use(history({
+  // Ignore routes for connect-history-api-fallback
+  rewrites: [
+    { from: '/presence', to: '/presence'},
+    { from: '/location', to: '/location'},
+  ]
+}));
+
+
 
 // Connect to MQTT
-var mqtt_client  = mqtt.connect('mqtt://192.168.1.2', {
-  username: credentials.mqtt_username,
-  password: credentials.mqtt_password
-});
 
 function subscribe_to_all(){
   // Subscribing to all topics
@@ -118,14 +136,14 @@ function located_in(new_location){
 
 
 // MQTT connection callback
-mqtt_client.on('connect', function () {
+mqtt_client.on('connect', () => {
   console.log("[MQTT] Connected to MQTT broker");
   subscribe_to_all();
 });
 
 
 // MQTT message callback
-mqtt_client.on('message', function (topic, payload) {
+mqtt_client.on('message', (topic, payload) => {
   console.log("[MQTT] Message arrived on " + topic + ": " + payload);
 
   // Check what room the event was triggered from
@@ -136,16 +154,20 @@ mqtt_client.on('message', function (topic, payload) {
   }
 });
 
-app.get('/presence', function(req, res) {
+app.get('/location', (req, res) => {
+  res.send(location);
+});
+
+app.get('/location_update', (req, res) => {
   // RestFul API to update location
   if(req.query.location){
     located_in(req.query.location);
     console.log("[HTTP] Location GET request");
-    res.send("OK");
+    res.send(location);
   }
   else {
     // TODO: Send invalid code
-    res.send("Presence not defined");
+    res.status(400).send("Presence not defined");
     console.log("[HTTP] Invalid request");
   }
 });

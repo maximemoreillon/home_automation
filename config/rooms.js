@@ -1,4 +1,4 @@
-exports.rooms = [
+module.exports = [
   {
     name: "living",
     motion_sensor_topics: ["motion/living/status"],
