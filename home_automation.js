@@ -31,6 +31,7 @@ const mqtt_client  = mqtt.connect('mqtt://192.168.1.2', secrets.mqtt);
 
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'dist')));
+app.use(cors());
 app.use(history({
   // Ignore routes for connect-history-api-fallback
   rewrites: [
@@ -229,5 +230,10 @@ app.get('/location_update', (req, res) => {
 
 });
 
+io.on('connection', (socket) =>{
+  console.log('a user connected');
+  socket.emit('location',location)
+});
+
 // Start the web server
-app.listen(port, () => console.log(`Example app listening on port ${port}!`))
+http_server.listen(port, () => console.log(`Example app listening on port ${port}!`))
