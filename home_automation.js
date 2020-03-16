@@ -93,20 +93,15 @@ function timeOutCallback(room){
   turn_all_lights_of_room_off(room);
 }
 
-function update_location(new_location){
-  // Update location
-  location = new_location;
-  io.emit('location', location)
-  console.log(`[Location] Location changed to ${location}`);
-}
+
 
 function turn_previous_room_lights_off(previous_location){
   // Check if previous location is a room
   let previous_room = rooms.find(room => { return room.name === previous_location})
   if(previous_room) {
     // set timeout for previous room to turn off
-    console.log(`Setting timer for lights of ${room.name} to turn OFF`);
-    room.timeOut = setTimeout(timeOutCallback, lights_off_delay, room);
+    console.log(`Setting timer for lights of ${previous_room.name} to turn OFF`);
+    previous_room.timeOut = setTimeout(timeOutCallback, lights_off_delay, previous_room);
   }
 }
 
@@ -168,20 +163,20 @@ function register_motion(topic, payload_json){
       // Check what room the event was triggered from
       let matching_room = rooms.find( room => {return room.motion_sensor_topics.includes(topic)})
       console.log(`[MQTT] Matching room for motion: ${matching_room.name}`)
-      if(matching_room) located_in(matching_room.name);
+      if(matching_room) update_location(matching_room.name);
     }
   }
 }
 
-function located_in(new_location){
+function update_location(new_location){
 
   // Check if location changed
   if(location !== new_location){
 
     //  Check if new location is 'out'
     if(new_location === 'out'){
-      console.log('[Location] No occupant at home, turning AC off');
-      turn_all_ac_off();
+      console.log('[Location] No occupant at home, turning AC off')
+      turn_all_ac_off()
     }
 
     // Deal with new room
@@ -191,7 +186,9 @@ function located_in(new_location){
     turn_previous_room_lights_off(location)
 
     // Update location
-    update_location(new_location)
+    location = new_location;
+    io.emit('location', location)
+    console.log(`[Location] Location changed to ${location}`);
   }
 }
 
@@ -225,7 +222,7 @@ app.get('/location_update', (req, res) => {
   // RestFul API to update location
   if(!req.query.location) return res.status(400).send("Presence not defined");
 
-  located_in(req.query.location);
+  update_location(req.query.location);
   res.send(location);
 
 });
