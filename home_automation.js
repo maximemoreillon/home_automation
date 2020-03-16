@@ -14,8 +14,11 @@ var rooms = require('./config/rooms.js');
 process.env.TZ = 'Asia/Tokyo';
 
 // Parameters
-const port = 7073;
-const lights_off_delay = 1*60*1000;
+const port = 7073
+const lights_off_delay = 1*60*1000
+const daylight_start_time = 6
+const daylight_end_time = 17
+const illuminance_threshold = 300
 
 // User location
 var location = "unknown"; // Default location
@@ -42,43 +45,45 @@ app.use(history({
 
 function subscribe_to_all(){
   // Subscribing to all topics
-  for(var room_index=0; room_index<rooms.length; room_index++){
-    for(var topic_index=0; topic_index<rooms[room_index].motion_sensor_topics.length; topic_index++){
-      console.log("[MQTT] Subscribing to: " + rooms[room_index].motion_sensor_topics[topic_index])
-      mqtt_client.subscribe(rooms[room_index].motion_sensor_topics[topic_index]);
+  rooms.forEach(room => {
+    if(room.motion_sensor_topics){
+      room.motion_sensor_topics.forEach(topic => { mqtt_client.subscribe(topic) });
     }
-  }
+
+    if(room.illuminance_topics) {
+      room.illuminance_topics.forEach(topic => { mqtt_client.subscribe(topic) });
+    }
+
+  });
+
 }
 
 function turn_all_lights_of_room_off(room){
   // Turn all lights of given room OFF
-  console.log("[MQTT] turning lights of " + room.name + " OFF");
-  for(var topic_index=0; topic_index<room.light_topics.length; topic_index++){
-    mqtt_client.publish(room.light_topics[topic_index], "{'state':'OFF'}");
-  }
+  console.log(`[MQTT] turning lights of ${room.name}  OFF`);
+  room.light_topics.forEach( topic => {
+    mqtt_client.publish(topic, "{'state':'OFF'}");
+  });
+
 }
 
 function turn_all_lights_of_room_on(room){
   // Turn all lights of given room ON
-  console.log("[MQTT] turning lights of " + room.name + " ON");
-  for(var topic_index=0; topic_index<room.light_topics.length; topic_index++){
-    mqtt_client.publish(room.light_topics[topic_index], "{'state':'ON'}");
-  }
+  console.log(`[MQTT] turning lights of ${room.name}  ON`);
+  room.light_topics.forEach( topic => {
+    mqtt_client.publish(topic, "{'state':'ON'}");
+  });
 }
 
 function turn_all_ac_off(){
-  for(var room_index=0; room_index<rooms.length; room_index++){
-    var room = rooms[room_index];
 
-    // Check if the room has one of more AC units
+  console.log(`[MQTT] turning AC of all rooms OFF`);
+  rooms.forEach(room => {
     if(room.ac_command_topics){
-
-      // If so, turn all off
-      for(var topic_index=0; topic_index<room.ac_command_topics.length; topic_index++){
-        mqtt_client.publish(room.ac_command_topics[topic_index], "{'state':'OFF'}");
-      }
+      room.ac_command_topics.forEach(topic => { mqtt_client.publish(topic, "{'state':'OFF'}") });
     }
-  }
+
+  });
 }
 
 
@@ -87,50 +92,105 @@ function timeOutCallback(room){
   turn_all_lights_of_room_off(room);
 }
 
+function update_location(new_location){
+  // Update location
+  location = new_location;
+  io.emit('location', location)
+  console.log(`[Location] Location changed to ${location}`);
+}
+
+function turn_previous_room_lights_off(previous_location){
+  // Check if previous location is a room
+  let previous_room = rooms.find(room => { return room.name === previous_location})
+  if(previous_room) {
+    // set timeout for previous room to turn off
+    console.log(`Setting timer for lights of ${room.name} to turn OFF`);
+    room.timeOut = setTimeout(timeOutCallback, lights_off_delay, room);
+  }
+}
+
+function turn_lights_on_in_current_room(new_location){
+  // Check if new location is a known room
+  let new_room = rooms.find(room => { return room.name === new_location})
+
+  if(new_room) {
+    console.log(`[Location] ${new_location} is a known room`)
+      // But if it's a night time only room, check if it's night time first
+      if(new_room.nightTimeOnly){
+
+        // Turn lights on if illuminance is low
+        if(new_room.illuminance) {
+          console.log(`[Location] Turning lights on in ${new_room.name} because of low illuminance`)
+          if(new_room.illuminance < illuminance_threshold) turn_all_lights_of_room_on(new_room)
+        }
+
+        // Turn lights on if time of the day is night
+        else if((new Date().getHours() <= daylight_start_time
+          || new Date().getHours() >= daylight_end_time)){
+          console.log(`[Location] Turning lights on in ${new_room.name} because of the time of the day`)
+          turn_all_lights_of_room_on(new_room)
+        }
+
+        // Turn lights on anyway
+        else console.log("[Location] This room is night time only and it's not dark enough")
+
+      }
+      else {
+        console.log(`[Location] Turning lights on in ${new_room.name} regardless of time`)
+        turn_all_lights_of_room_on(new_room)
+      }
+
+    // clear timouts
+    // SOMETHING BAD IS GOING TO HAPPEN HERE
+    clearTimeout(new_room.timeOut);
+  }
+}
+
+function register_illuminance(topic, payload_json){
+  // Check what room the event was triggered from
+  if(payload_json.illuminance){
+    console.log(`[MQTT] Received illuminance information`)
+    let matching_room = rooms.find( room => {
+      if(room.illuminance_topics){
+        return room.illuminance_topics.includes(topic)
+      }
+    })
+    console.log(`[MQTT] Matching room for illuminance: ${matching_room.name}`)
+    if(matching_room) matching_room.illuminance = payload_json.illuminance
+  }
+}
+
+function register_motion(topic, payload_json){
+  if(payload_json.state){
+    if(payload_json.state === 'motion'){
+      console.log('[MQTT] motion sensor triggered')
+      // Check what room the event was triggered from
+      let matching_room = rooms.find( room => {return room.motion_sensor_topics.includes(topic)})
+      console.log(`[MQTT] Matching room for motion: ${matching_room.name}`)
+      if(matching_room) located_in(matching_room.name);
+    }
+  }
+}
+
 function located_in(new_location){
 
   // Check if location changed
   if(location !== new_location){
 
-    // Deal with new location
-
-
     //  Check if new location is 'out'
     if(new_location === 'out'){
-      console.log('Apartment empty, turning AC units off');
+      console.log('[Location] No occupant at home, turning AC off');
       turn_all_ac_off();
     }
 
-    // Check if new location is a room
-    for(var room_index=0; room_index<rooms.length; room_index++){
-      if(new_location === rooms[room_index].name){
-
-        // If it is a room, turn its lights on
-        // But if it's a night time only room, check if it's night time first
-        if(!rooms[room_index].nightTimeOnly || (new Date().getHours() <= 6 || new Date().getHours() >= 17)){
-          turn_all_lights_of_room_on(rooms[room_index])
-        }
-        else {
-          console.log("This room is night time only and it's not night time")
-        }
-        // clear timouts
-        clearTimeout(rooms[room_index].timeOut);
-      }
-    }
+    // Deal with new room
+    turn_lights_on_in_current_room(new_location)
 
     // Deal with previous room
-    // Check if previous location is a room
-    for(var room_index=0; room_index<rooms.length; room_index++){
-      if(location === rooms[room_index].name){
-        // set timeout for previous room to turn off
-        console.log("Setting timer for lights of " + rooms[room_index].name + " to turn OFF");
-        rooms[room_index].timeOut = setTimeout(timeOutCallback, lights_off_delay, rooms[room_index]);
-      }
-    }
+    turn_previous_room_lights_off(location)
 
     // Update location
-    location = new_location;
-    console.log("Location changed to " + location);
+    update_location(new_location)
   }
 }
 
@@ -144,14 +204,16 @@ mqtt_client.on('connect', () => {
 
 // MQTT message callback
 mqtt_client.on('message', (topic, payload) => {
-  console.log("[MQTT] Message arrived on " + topic + ": " + payload);
+  console.log(`[MQTT] Message arrived on ${topic}: ${payload}`);
 
-  // Check what room the event was triggered from
-  for(var room_index=0; room_index<rooms.length; room_index++){
-    if(rooms[room_index].motion_sensor_topics.includes(topic) && payload =='{"state":"motion"}'){
-      located_in(rooms[room_index].name);
-    }
-  }
+  // TODO: Check if parseable
+  let payload_json = JSON.parse(payload)
+
+  // Register illuminance
+  register_illuminance(topic, payload_json)
+
+  // reister motion
+  register_motion(topic, payload_json)
 });
 
 app.get('/location', (req, res) => {
@@ -160,16 +222,11 @@ app.get('/location', (req, res) => {
 
 app.get('/location_update', (req, res) => {
   // RestFul API to update location
-  if(req.query.location){
-    located_in(req.query.location);
-    console.log("[HTTP] Location GET request");
-    res.send(location);
-  }
-  else {
-    // TODO: Send invalid code
-    res.status(400).send("Presence not defined");
-    console.log("[HTTP] Invalid request");
-  }
+  if(!req.query.location) return res.status(400).send("Presence not defined");
+
+  located_in(req.query.location);
+  res.send(location);
+
 });
 
 // Start the web server

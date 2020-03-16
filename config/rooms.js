@@ -3,6 +3,7 @@ module.exports = [
     name: "living",
     motion_sensor_topics: ["motion/living/status"],
     light_topics: ["light/living/command"],
+    illuminance_topics: ['illuminance/living/status'],
     nightTimeOnly: true,
   },
   {
@@ -29,6 +30,7 @@ module.exports = [
     motion_sensor_topics: ["motion/bedroom/status"],
     light_topics: ["light/bedroom/command"],
     ac_command_topics: ['ac/bedroom/command'],
+    illuminance_topics: ['illuminance/bedroom/status'],
     nightTimeOnly: true,
   },
 ];
