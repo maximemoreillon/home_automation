@@ -18,7 +18,7 @@ const port = 7073
 const lights_off_delay = 1*60*1000
 const daylight_start_time = 6
 const daylight_end_time = 17
-const illuminance_threshold = 300
+const illuminance_threshold = 450
 
 // User location
 var location = "unknown"; // Default location
@@ -117,10 +117,12 @@ function turn_lights_on_in_current_room(new_location){
         // Turn lights on if illuminance is low
         if(new_room.illuminance) {
           console.log(`[Location] Turning lights on in ${new_room.name} because of low illuminance`)
-          if(new_room.illuminance < illuminance_threshold) turn_all_lights_of_room_on(new_room)
+          if(new_room.illuminance < illuminance_threshold) {
+            turn_all_lights_of_room_on(new_room)
+          }
         }
 
-        // Turn lights on if time of the day is night
+        // if illuminance data not available, turn lights on based on time of the day
         else if((new Date().getHours() <= daylight_start_time
           || new Date().getHours() >= daylight_end_time)){
           console.log(`[Location] Turning lights on in ${new_room.name} because of the time of the day`)

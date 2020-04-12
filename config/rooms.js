@@ -10,6 +10,7 @@ module.exports = [
     name: "kitchen",
     motion_sensor_topics: ["motion/kitchen/status"],
     light_topics: ["light/kitchen/command"],
+    //illuminance_topics: ['illuminance/kitchen/status'],
     ac_command_topics: ['ac/kitchen/command'],
     nightTimeOnly: true,
   },
