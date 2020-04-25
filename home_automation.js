@@ -6,15 +6,20 @@ const history = require('connect-history-api-fallback');
 const bodyParser = require("body-parser");
 const cors = require('cors');
 const path = require('path');
+const dotenv = require('dotenv');
 
 var secrets = require('./secrets.js');
 
 var rooms = require('./config/rooms.js');
 
+dotenv.config();
+
 process.env.TZ = 'Asia/Tokyo';
 
 // Parameters
-const port = 7073
+var port = 80
+if(process.env.APP_PORT) port=process.env.APP_PORT
+
 const lights_off_delay = 1*60*1000
 const daylight_start_time = 6
 const daylight_end_time = 17
