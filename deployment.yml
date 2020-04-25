@@ -1,33 +1,54 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: home-automation
+  name: ${APPLICATION_NAME}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: home-automation
+      app: ${APPLICATION_NAME}
   template:
     metadata:
       labels:
-        app: home-automation
+        app: ${APPLICATION_NAME}
     spec:
       containers:
-      - name: home-automation
-        image: 192.168.1.2:5000/home-automation
+      - name: ${APPLICATION_NAME}
+        image: ${CONTAINER_REGISTRY}/${APPLICATION_NAME}:latest
+        imagePullPolicy: Always # Ensures that k8s pulls a new image on restart
         ports:
-        - containerPort: 7073
+        - containerPort: 80
+      imagePullSecrets:
+      - name: registry-credentials # Credentials to pull image from registry
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  labels:
-    run: home-automation
-  name: home-automation
+  name: ${APPLICATION_NAME}
 spec:
-  ports:
-  - port: 7073
-    nodePort: 30073
+  type: ClusterIP
   selector:
-    app: home-automation
-  type: LoadBalancer
+    app: ${APPLICATION_NAME}
+  ports:
+  - port: 80
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ${APPLICATION_NAME} # Name of the ingress, named after the application
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod" # This is necessary, no idea why
+spec:
+  tls:
+  - hosts:
+    - ${CERTIFICATE_DOMAIN}
+    secretName: ${APPLICATION_NAME} # Name of the secret, i.e. the certificates
+  rules:
+  - host: ${CERTIFICATE_DOMAIN}
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: ${APPLICATION_NAME} # Name of the service, named after the app
+          servicePort: 80
