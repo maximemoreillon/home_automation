@@ -119,20 +119,22 @@ function turn_lights_on_in_current_room(new_location){
       // But if it's a night time only room, check if it's night time first
       if(new_room.nightTimeOnly){
 
+        // if illuminance data not available, turn lights on based on time of the day
+        if((new Date().getHours() <= daylight_start_time
+          || new Date().getHours() >= daylight_end_time)){
+          console.log(`[Location] Turning lights on in ${new_room.name} because of the time of the day`)
+          turn_all_lights_of_room_on(new_room)
+        }
+
         // Turn lights on if illuminance is low
-        if(new_room.illuminance) {
+        else if(new_room.illuminance) {
           console.log(`[Location] Turning lights on in ${new_room.name} because of low illuminance`)
           if(new_room.illuminance < illuminance_threshold) {
             turn_all_lights_of_room_on(new_room)
           }
         }
 
-        // if illuminance data not available, turn lights on based on time of the day
-        else if((new Date().getHours() <= daylight_start_time
-          || new Date().getHours() >= daylight_end_time)){
-          console.log(`[Location] Turning lights on in ${new_room.name} because of the time of the day`)
-          turn_all_lights_of_room_on(new_room)
-        }
+
 
         // Turn lights on anyway
         else console.log("[Location] This room is night time only and it's not dark enough")
