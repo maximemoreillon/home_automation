@@ -1,8 +1,8 @@
 {
-  "name": "room_presence_estimator",
+  "name": "home_automation",
   "version": "1.0.0",
   "description": "",
-  "main": "room_presence_estimator.js",
+  "main": "home_automation.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

@@ -34,14 +34,15 @@ const http_server = http.Server(app);
 const io = socketio(http_server);
 const mqtt_client  = mqtt.connect('mqtt://192.168.1.2', secrets.mqtt);
 
-app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, 'dist')));
+app.use(bodyParser.json())
+app.use(express.static(path.join(__dirname, 'dist'))) // serve front end
 app.use(cors());
 app.use(history({
   // Ignore routes for connect-history-api-fallback
   rewrites: [
     { from: '/presence', to: '/presence'},
     { from: '/location', to: '/location'},
+    { from: '/location_update', to: '/location_update'},
   ]
 }));
 
@@ -232,6 +233,15 @@ app.get('/location_update', (req, res) => {
   if(!req.query.location) return res.status(400).send("Presence not defined");
 
   update_location(req.query.location);
+  res.send(location);
+
+});
+
+app.post('/location_update', (req, res) => {
+  // RestFul API to update location
+  if(!req.body.location) return res.status(400).send("Presence not defined");
+
+  update_location(req.body.location);
   res.send(location);
 
 });
