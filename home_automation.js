@@ -230,21 +230,30 @@ app.get('/location', (req, res) => {
 
 app.get('/location_update', (req, res) => {
   // RestFul API to update location
-  if(!req.query.location) return res.status(400).send("Presence not defined");
+  if(!req.query.location) return res.status(400).send("location attribute not defined");
 
   update_location(req.query.location);
   res.send(location);
 
-});
+})
 
 app.post('/location_update', (req, res) => {
   // RestFul API to update location
-  if(!req.body.location) return res.status(400).send("Presence not defined");
+  if(!req.body.location) return res.status(400).send("location attribute not defined");
 
   update_location(req.body.location);
   res.send(location);
 
-});
+})
+
+app.put('/location', (req, res) => {
+  // RestFul API to update location
+  if(!req.body.location) return res.status(400).send("location attribute not defined");
+
+  update_location(req.body.location);
+  res.send(location);
+})
+
 
 io.on('connection', (socket) =>{
   console.log('a user connected');
