@@ -5,7 +5,7 @@ stages:
 variables:
   APPLICATION_NAME: home-automation
   DOCKER_IMAGE: ${CONTAINER_REGISTRY}/${APPLICATION_NAME}
-  CERTIFICATE_DOMAIN: automation.home.maximemoreillon.com
+  CERTIFICATE_DOMAIN: api.automation.home.maximemoreillon.com
 
 
 containerization:

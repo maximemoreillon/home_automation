@@ -1,18 +1,18 @@
-const mqtt = require('mqtt');
-const express = require('express');
-const socketio = require('socket.io');
-const http = require('http');
-const history = require('connect-history-api-fallback');
-const bodyParser = require("body-parser");
-const cors = require('cors');
-const path = require('path');
-const dotenv = require('dotenv');
+const mqtt = require('mqtt')
+const express = require('express')
+const socketio = require('socket.io')
+const http = require('http')
+const history = require('connect-history-api-fallback')
+const bodyParser = require("body-parser")
+const cors = require('cors')
+const path = require('path')
+const dotenv = require('dotenv')
 
-var rooms = require('./config/rooms.js');
+var rooms = require('./config/rooms.js')
 
-dotenv.config();
+dotenv.config()
 
-process.env.TZ = 'Asia/Tokyo';
+process.env.TZ = 'Asia/Tokyo'
 
 // Parameters
 const port = process.env.APP_PORT || 80
@@ -23,7 +23,7 @@ const daylight_end_time = 17
 const illuminance_threshold = 450
 
 // User location
-var location = "unknown"; // Default location
+var location = "unknown" // Default location
 
 // Express instance
 const app = express();
@@ -53,7 +53,7 @@ function subscribe_to_all(){
       room.illuminance_topics.forEach(topic => { mqtt_client.subscribe(topic) });
     }
 
-  });
+  })
 
 }
 
