@@ -8,8 +8,6 @@ const cors = require('cors');
 const path = require('path');
 const dotenv = require('dotenv');
 
-var secrets = require('./secrets.js');
-
 var rooms = require('./config/rooms.js');
 
 dotenv.config();
@@ -17,8 +15,7 @@ dotenv.config();
 process.env.TZ = 'Asia/Tokyo';
 
 // Parameters
-var port = 80
-if(process.env.APP_PORT) port=process.env.APP_PORT
+const port = process.env.APP_PORT || 80
 
 const lights_off_delay = 1*60*1000
 const daylight_start_time = 6
@@ -32,21 +29,16 @@ var location = "unknown"; // Default location
 const app = express();
 const http_server = http.Server(app);
 const io = socketio(http_server);
-const mqtt_client  = mqtt.connect('mqtt://192.168.1.2', secrets.mqtt);
+const mqtt_client  = mqtt.connect(
+  process.env.MQTT_URL,
+  {
+    username: process.env.MQTT_USERNAME,
+    password: process.env.MQTT_PASSWORD
+  }
+)
 
 app.use(bodyParser.json())
-app.use(express.static(path.join(__dirname, 'dist'))) // serve front end
-app.use(cors());
-app.use(history({
-  // Ignore routes for connect-history-api-fallback
-  rewrites: [
-    { from: '/presence', to: '/presence'},
-    { from: '/location', to: '/location'},
-    { from: '/location_update', to: '/location_update'},
-  ]
-}));
-
-
+app.use(cors())
 
 // Connect to MQTT
 
