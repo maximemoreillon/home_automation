@@ -5,7 +5,7 @@ stages:
 variables:
   APPLICATION_NAME: home-automation
   DOCKER_IMAGE: ${CONTAINER_REGISTRY}/${APPLICATION_NAME}
-  CERTIFICATE_DOMAIN: api.automation.home.maximemoreillon.com
+  # CERTIFICATE_DOMAIN: api.automation.home.maximemoreillon.com
 
 
 containerization:
@@ -25,7 +25,7 @@ containerization:
 deployment:
   stage: deploy
   script:
-    - envsubst < deployment.yml | kubectl apply -f -
+    #- envsubst < deployment.yml | kubectl apply -f -
     - kubectl rollout restart deployment/${APPLICATION_NAME}
   environment:
     name: production
