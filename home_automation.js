@@ -8,6 +8,7 @@ const cors = require('cors')
 const path = require('path')
 const dotenv = require('dotenv')
 const chalk = require('chalk')
+const pjson = require('./package.json')
 
 let rooms = require('./config/rooms.js')
 
@@ -321,12 +322,18 @@ let express_update_location = (req, res) => {
   res.send(location);
 }
 
+app.get('/', (req, res) => {
+  res.send({
+    version: pjson.version
+  })
+})
+
 app.route('/location')
   .get(get_location)
   .put(express_update_location)
 
 app.get('/enabled', (req, res) => {
-  res.send(location)
+  res.send(enabled)
 })
 
 app.put('/enabled', (req, res) => {
