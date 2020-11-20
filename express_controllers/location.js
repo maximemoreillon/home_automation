@@ -1,8 +1,8 @@
-let main = require('../home_automation.js')
+var state = require('../state.js')
 
 // Express controllers
 exports.get_location = (req, res) => {
-  res.send(main.location)
+  res.send(state.location)
 }
 
 exports.express_update_location = (req, res) => {
@@ -12,5 +12,5 @@ exports.express_update_location = (req, res) => {
   if(!new_location) return res.status(400).send("location not defined");
 
   main.update_location(new_location)
-  res.send(main.location)
+  res.send(state.location)
 }

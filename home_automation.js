@@ -11,7 +11,6 @@ const chalk = require('chalk')
 const pjson = require('./package.json')
 
 let rooms = require('./config/rooms.js')
-exports.rooms = rooms
 
 dotenv.config()
 
@@ -26,12 +25,8 @@ let daylight_start_time = 6 // [h]
 let daylight_end_time = 17 // [h]
 let illuminance_threshold = 500
 
-// User location
-let location = "unknown" // Default location
-exports.location = location
 
-let enabled = true // global switch for automations
-exports.enabled = enabled
+var state = require('./state.js')
 
 let timeouts = {} // experimental: storing timeouts
 
@@ -195,7 +190,7 @@ const turn_lights_on_in_current_room = (new_location) => {
     console.log(`[Timer] clearing timer for ${new_room.name}`)
     clearTimeout(timeouts[new_room.name])
   }
-  
+
 
 }
 
@@ -268,28 +263,28 @@ const register_motion = (topic, payload_json) => {
 const update_location = (new_location) => {
 
   // Check if location changed
-  if(location === new_location) return
+  if(state.location === new_location) return
 
-  const previous_location = location
-  location = new_location
+  const previous_location = state.location
+  state.location = new_location
 
-  console.log(`[Location] Location changed to ${chalk.yellow(location)}`)
+  console.log(`[Location] Location changed to ${chalk.yellow(state.location)}`)
 
   // Websocket emit
-  io.emit('location', location)
+  io.emit('location', state.location)
 
   // Actions upon location update
-  if(!enabled) return console.log(`Automations disabled`)
+  if(!state.enabled) return console.log(`Automations disabled`)
 
 
   //  Check if new location is 'out'
-  if(location === 'out'){
+  if(state.location === 'out'){
     console.log('[Location] User is outside, turning AC off')
     turn_all_ac_off()
   }
 
   // Deal with new room
-  turn_lights_on_in_current_room(location)
+  turn_lights_on_in_current_room(state.location)
 
   // Deal with previous room
   turn_previous_room_lights_off(previous_location)
@@ -332,12 +327,13 @@ mqtt_client.on('message', (topic, payload) => {
 
 
 
-let location_controller = require('./controllers/location.js')
-let rooms_controller = require('./controllers/rooms.js')
-let enabled_controller = require('./controllers/enabled.js')
+let location_controller = require('./express_controllers/location.js')
+let rooms_controller = require('./express_controllers/rooms.js')
+let enabled_controller = require('./express_controllers/enabled.js')
 
 app.get('/', (req, res) => {
   res.send({
+    application_name: 'Maxime MOREILLON',
     version: pjson.version
   })
 })
