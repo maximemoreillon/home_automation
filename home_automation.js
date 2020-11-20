@@ -363,7 +363,7 @@ app.route('/rooms/:name/occupants')
 
 io.on('connection', (socket) =>{
   console.log('[Websocket] a user connected');
-  socket.emit('location', location)
+  socket.emit('location', state.location)
 })
 
 // Start the web server
