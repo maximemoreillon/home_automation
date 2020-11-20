@@ -1,4 +1,5 @@
 var state = require('../state.js')
+var main = require('../home_automation.js')
 
 // Express controllers
 exports.get_location = (req, res) => {
