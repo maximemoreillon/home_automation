@@ -11,6 +11,7 @@ const chalk = require('chalk')
 const pjson = require('./package.json')
 
 let rooms = require('./config/rooms.js')
+exports.rooms = rooms
 
 dotenv.config()
 
@@ -27,14 +28,21 @@ let illuminance_threshold = 500
 
 // User location
 let location = "unknown" // Default location
-let enabled = true
+exports.location = location
 
-//let timeouts = {} // experimental: storing timeouts
+let enabled = true // global switch for automations
+exports.enabled = enabled
+
+let timeouts = {} // experimental: storing timeouts
 
 // Express instance
 const app = express()
 const http_server = http.Server(app)
 const io = socketio(http_server)
+
+// Exports
+exports.io = io
+
 
 const mqtt_client  = mqtt.connect(
   process.env.MQTT_URL,
@@ -44,12 +52,15 @@ const mqtt_client  = mqtt.connect(
   }
 )
 
+exports.mqtt_client = mqtt_client
+
+
 app.use(bodyParser.json())
 app.use(cors())
 
 // Connect to MQTT
 
-function subscribe_to_all(){
+const subscribe_to_all = () => {
   // Subscribing to all topics
 
   console.log(`[MQTT] Subscribing to all topics`)
@@ -57,6 +68,8 @@ function subscribe_to_all(){
   rooms.forEach(room => {
     //console.log(`[MQTT] Subscribing to topics for room ${room.name}`)
 
+    // There should be a better way to subscribe to everyting
+    // maybe {name: 'bedroom', topics: {motion: [], illuminance: []}}
     if(room.motion_sensors){
       room.motion_sensors.forEach(sensor => { mqtt_client.subscribe(sensor.topic) })
     }
@@ -70,8 +83,10 @@ function subscribe_to_all(){
 }
 
 
-function switch_lights_of_room(room, state){
-  let mqtt_payload = {state: state}
+const switch_lights_of_room = (room, state) => {
+
+  const mqtt_payload = JSON.stringify({state: state})
+  const mqtt_options = {qos: 1, retain: true}
 
   console.log(`[MQTT] turning lights of ${chalk.yellow(room.name)} ${state}`)
 
@@ -81,13 +96,16 @@ function switch_lights_of_room(room, state){
   room.lights.forEach( light => {
     if(light.disabled) return
     //mqtt_client.publish(light.topic, JSON.stringify(mqtt_payload))
-    mqtt_client.publish(light.topic, JSON.stringify(mqtt_payload))
+    mqtt_client.publish(light.topic, mqtt_payload, mqtt_options)
   })
 
 }
 
-function turn_all_ac_off(){
-  let mqtt_payload = {state: 'OFF'}
+const turn_all_ac_off = () => {
+
+  const mqtt_payload = JSON.stringify({ state: 'OFF' })
+  const mqtt_options = {qos: 1, retain: true}
+
   console.log(`[MQTT] turning AC of all rooms OFF`)
 
   rooms.forEach(room => {
@@ -102,36 +120,36 @@ function turn_all_ac_off(){
     if(!room.air_conditioners) return
 
     room.air_conditioners.forEach( device => {
-      mqtt_client.publish(device.topic, JSON.stringify(mqtt_payload), {qos: 1, retain: true})
+      mqtt_client.publish(device.topic, mqtt_payload, mqtt_options)
     })
 
   })
 }
 
 
-function timeOutCallback(room){
+const timeOutCallback = (room) => {
   // Turn off after timeout expires
   //turn_all_lights_of_room_off(room);
-  return () => {switch_lights_of_room(room, 'OFF')}
+  return () => { switch_lights_of_room( room, 'OFF') }
 }
 
 
 
-function turn_previous_room_lights_off(previous_location){
+const turn_previous_room_lights_off = (previous_location) => {
   // Check if previous location is a room
-  let previous_room = rooms.find(room => { return room.name === previous_location})
+  let previous_room = rooms.find(room => { return room.name === previous_location })
 
   // if the previous location is not a room, do nothing
   if(!previous_room) return
 
   // set timeout for previous room to turn off
   console.log(`[Timer] Setting ${lights_off_delay}ms timer for ${chalk.yellow(previous_room.name)} lights to turn OFF`)
-  previous_room.lights_timeout = setTimeout(timeOutCallback(previous_room), lights_off_delay)
-  //timeouts[previous_room.name] = setTimeout(timeOutCallback(previous_room), lights_off_delay)
+  //previous_room.lights_timeout = setTimeout(timeOutCallback(previous_room), lights_off_delay)
+  timeouts[previous_room.name] = setTimeout(timeOutCallback(previous_room), lights_off_delay)
 
 }
 
-function turn_lights_on_in_current_room(new_location){
+const turn_lights_on_in_current_room = (new_location) => {
   // Check if new location is a known room
   let new_room = rooms.find(room => { return room.name === new_location})
 
@@ -165,21 +183,23 @@ function turn_lights_on_in_current_room(new_location){
 
   // clear timouts
   // Todo: might want to rename
+  /*
   if(new_room.lights_timeout){
     console.log(`[Timer] clearing timer for ${chalk.yellow(new_room.name)}`)
     clearTimeout(new_room.lights_timeout)
   }
+  */
 
-  /*
+
   if(timeouts[new_room.name]){
     console.log(`[Timer] clearing timer for ${new_room.name}`)
     clearTimeout(timeouts[new_room.name])
   }
-  */
+  
 
 }
 
-function register_illuminance(topic, payload_json){
+const register_illuminance = (topic, payload_json) => {
   // Check what room the event was triggered from
   if(!payload_json.illuminance) return
 
@@ -202,10 +222,11 @@ function register_illuminance(topic, payload_json){
   //console.log(`[MQTT] Illuminance of ${matching_room.name}: ${payload_json.illuminance}`)
 
   // Store the illuminance value
+  // Todo: find better way to store illuminance
   matching_room.illuminance = payload_json.illuminance
 }
 
-function register_motion(topic, payload_json){
+const register_motion = (topic, payload_json) => {
 
   // Check if the payload has a state
   if(!payload_json.state) return
@@ -240,11 +261,11 @@ function register_motion(topic, payload_json){
 
   // Actions following motion detection => location update
   // This could be a callback
-  exports.update_location(matching_room.name)
+  update_location(matching_room.name)
 
 }
 
-exports.update_location = (new_location) => {
+const update_location = (new_location) => {
 
   // Check if location changed
   if(location === new_location) return
@@ -258,23 +279,25 @@ exports.update_location = (new_location) => {
   io.emit('location', location)
 
   // Actions upon location update
-  if(enabled) {
+  if(!enabled) return console.log(`Automations disabled`)
 
-    //  Check if new location is 'out'
-    if(location === 'out'){
-      console.log('[Location] User is outside, turning AC off')
-      turn_all_ac_off()
-    }
 
-    // Deal with new room
-    turn_lights_on_in_current_room(location)
-
-    // Deal with previous room
-    turn_previous_room_lights_off(previous_location)
-
+  //  Check if new location is 'out'
+  if(location === 'out'){
+    console.log('[Location] User is outside, turning AC off')
+    turn_all_ac_off()
   }
 
+  // Deal with new room
+  turn_lights_on_in_current_room(location)
+
+  // Deal with previous room
+  turn_previous_room_lights_off(previous_location)
+
+
 }
+
+
 
 
 // MQTT connection callback
@@ -307,20 +330,11 @@ mqtt_client.on('message', (topic, payload) => {
   register_illuminance(topic, payload_json)
 })
 
-// Express controllers
-let get_location = (req, res) => {
-  res.send(location)
-}
 
-let express_update_location = (req, res) => {
-  // RestFul API to update location
 
-  let new_location = req.body.location
-  if(!new_location) return res.status(400).send("location not defined");
-
-  exports.update_location(new_location)
-  res.send(location);
-}
+let location_controller = require('./controllers/location.js')
+let rooms_controller = require('./controllers/rooms.js')
+let enabled_controller = require('./controllers/enabled.js')
 
 app.get('/', (req, res) => {
   res.send({
@@ -328,31 +342,37 @@ app.get('/', (req, res) => {
   })
 })
 
+
+
 app.route('/location')
-  .get(get_location)
-  .put(express_update_location)
+.get(location_controller.get_location)
+.put(location_controller.express_update_location)
 
-app.get('/enabled', (req, res) => {
-  res.send(enabled)
-})
+app.route('/enabled')
+.get(enabled_controller.get_enabled)
+.put(enabled_controller.set_enabled)
 
-app.put('/enabled', (req, res) => {
-  let new_state = req.body.enabled
-  if(!enabled) return res.status(400).send(`enabled not set`)
-  enabled = new_state
-  res.send(enabled)
-})
 
+app.route('/rooms')
+.get(rooms_controller.get_rooms)
+
+app.route('/rooms/:name')
+.get(rooms_controller.get_room)
+
+app.route('/rooms/:name/occupants')
+.put(rooms_controller.set_room_occupants)
 
 
 
 
 io.on('connection', (socket) =>{
   console.log('[Websocket] a user connected');
-  socket.emit('location',location)
+  socket.emit('location', location)
 })
 
 // Start the web server
 http_server.listen(port, () => {
   console.log(`Example app listening on port ${port}!`)
 })
+
+exports.update_location = update_location

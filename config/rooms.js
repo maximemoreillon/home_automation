@@ -5,7 +5,7 @@ module.exports = [
     // Experimental syntax
     motion_sensors: [
       {topic: "motion/living/status", disabled: false},
-      {topic: "motion/living/ceiling/status", disabled: false},
+      {topic: "motion/living/ceiling/status", disabled: true},
     ],
     illuminance_sensors: [
       {topic: 'illuminance/living/status'}
@@ -30,7 +30,7 @@ module.exports = [
     // experimental
     motion_sensors: [
       {topic: "motion/kitchen/status", disabled: false},
-      {topic: "motion/kitchen/ceiling/status", disabled: false},
+      {topic: "motion/kitchen/ceiling/status", disabled: true},
     ],
     illuminance_sensors: [
       {topic: 'illuminance/kitchen/status'}
