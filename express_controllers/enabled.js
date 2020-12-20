@@ -1,7 +1,7 @@
 var state = require('../state.js')
 
 exports.get_enabled = (req, res) => {
-  res.send(status.enabled)
+  res.send(state.enabled)
 }
 
 exports.set_enabled = (req, res) => {
