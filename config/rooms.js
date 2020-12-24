@@ -13,6 +13,9 @@ module.exports = [
     lights: [
       {topic: "light/living/command", disabled: false}
     ],
+    air_conditioners: [
+      {topic: 'heater/living/command'}
+    ],
 
     nightTimeOnly: true,
 
