@@ -24,9 +24,9 @@ const lights_off_delay = 1*60*1000 // [ms]
 const daylight_start_time = 6 // [h]
 const daylight_end_time = 17 // [h]
 const illuminance_threshold = 500
-//const climate_control_off_delay = 30 * 60 * 1000 // [ms]
+const climate_control_off_delay = 30 * 60 * 1000 // [ms]
 
-const climate_control_off_delay = 5 * 1000 // [ms]
+//const climate_control_off_delay = 5 * 1000 // [ms]
 
 
 var state = require('./state.js')
