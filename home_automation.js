@@ -10,7 +10,7 @@ const dotenv = require('dotenv')
 const chalk = require('chalk')
 const pjson = require('./package.json')
 
-let rooms = require('./config/rooms.js')
+const rooms = require('./config/rooms.js')
 
 dotenv.config()
 

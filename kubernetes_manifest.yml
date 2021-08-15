@@ -1,3 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ${APPLICATION_NAME}
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -22,8 +34,14 @@ spec:
         envFrom:
         - secretRef:
            name: environment-variables
-      imagePullSecrets:
-      - name: registry-credentials # Credentials to pull image from registry
+        # Mounth the config directory
+        volumeMounts:
+        - mountPath: "/usr/src/app/config"
+          name: ${APPLICATION_NAME}
+      volumes:
+      - name: ${APPLICATION_NAME}
+        persistentVolumeClaim:
+          claimName: ${APPLICATION_NAME}
 ---
 apiVersion: v1
 kind: Service
