@@ -2,7 +2,6 @@ const mqtt = require('mqtt')
 const express = require('express')
 const socketio = require('socket.io')
 const http = require('http')
-const history = require('connect-history-api-fallback')
 const bodyParser = require("body-parser")
 const cors = require('cors')
 const path = require('path')
@@ -406,8 +405,6 @@ app.route('/rooms')
 app.route('/rooms/:name')
 .get(rooms_controller.get_room)
 
-app.route('/rooms/:name/occupants')
-.put(rooms_controller.set_room_occupants)
 
 
 
