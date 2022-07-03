@@ -67,14 +67,17 @@ const subscribe_to_all = () => {
     // There should be a better way to subscribe to everyting
     // maybe {name: 'bedroom', topics: {motion: [], illuminance: []}}
     if(room.motion_sensors){
-      room.motion_sensors.forEach(sensor => { mqtt_client.subscribe(sensor.topic) })
+      room.motion_sensors.forEach( ({topic}) => { mqtt_client.subscribe(topic) })
     }
 
     if(room.illuminance_sensors) {
-      room.illuminance_sensors.forEach(sensor => { mqtt_client.subscribe(sensor.topic) })
+      room.illuminance_sensors.forEach(({ topic }) => { mqtt_client.subscribe(topic) })
     }
 
   })
+
+  // Additional topics
+  mqtt_client.subscribe('location')
 
 }
 
@@ -105,9 +108,6 @@ const turn_all_ac_off = () => {
 
   // Might not be necessary now that climate control is controlled based on location
 
-  const mqtt_payload = JSON.stringify({ state: 'OFF' })
-  const mqtt_options = {qos: 1, retain: true}
-
   console.log(`[MQTT] turning climate control of all rooms OFF`)
 
   rooms.forEach(room => {
@@ -116,6 +116,23 @@ const turn_all_ac_off = () => {
       room,
       state: 'OFF',
       device_type: 'air_conditioners',
+    })
+
+  })
+}
+
+const turn_all_lights_off = () => {
+
+  // Might not be necessary now that climate control is controlled based on location
+
+  console.log(`[MQTT] turning climate control of all rooms OFF`)
+
+  rooms.forEach(room => {
+
+    switch_devices_of_rooms({
+      room,
+      state: 'OFF',
+      device_type: 'lights',
     })
 
   })
@@ -148,7 +165,7 @@ const climate_control_timeout_callback = (room) => {
 
 const turn_previous_room_lights_off = (previous_location) => {
   // Check if previous location is a room
-  let previous_room = rooms.find(room => { return room.name === previous_location })
+  let previous_room = rooms.find( ({name}) => name === previous_location )
 
   // if the previous location is not a room, do nothing
   if(!previous_room) return
@@ -162,7 +179,7 @@ const turn_previous_room_lights_off = (previous_location) => {
 
 const turn_previous_room_climate_control_off = (previous_location) => {
   // Check if previous location is a room
-  let previous_room = rooms.find(room => { return room.name === previous_location })
+  let previous_room = rooms.find( ({name}) => name === previous_location)
 
   // if the previous location is not a room, do nothing
   if(!previous_room) return
@@ -176,7 +193,7 @@ const turn_previous_room_climate_control_off = (previous_location) => {
 
 const turn_lights_on_in_current_room = (new_location) => {
   // Check if new location is a known room
-  let new_room = rooms.find(room => { return room.name === new_location})
+  let new_room = rooms.find(({ name }) => name === new_location)
 
   if(!new_room) return
 
@@ -229,10 +246,9 @@ const turn_lights_on_in_current_room = (new_location) => {
 
 const clear_timer_for_climate_control = (new_location) => {
 
-  let new_room = rooms.find(room => { return room.name === new_location})
+  let new_room = rooms.find(({ name }) => name === new_location)
 
   if(!new_room) return
-
 
   if(!climate_control_timeouts[new_room.name]) return
 
@@ -244,7 +260,7 @@ const clear_timer_for_climate_control = (new_location) => {
 
 const register_illuminance = (topic, payload_json) => {
   // Check what room the event was triggered from
-  if(!payload_json.illuminance) return
+  if(!payload_json?.illuminance) return
 
   let matching_room = rooms.find( room => {
 
@@ -253,9 +269,7 @@ const register_illuminance = (topic, payload_json) => {
 
     if(!room.illuminance_sensors) return
 
-    return room.illuminance_sensors.find(sensor => {
-      return sensor.topic === topic
-    })
+    return room.illuminance_sensors.find(sensor => sensor.topic === topic)
 
   })
 
@@ -272,7 +286,7 @@ const register_illuminance = (topic, payload_json) => {
 const register_motion = (topic, payload_json) => {
 
   // Check if the payload has a state
-  if(!payload_json.state) return
+  if(!payload_json?.state) return
 
   // Check if the state relates to motion
   if(payload_json.state !== 'motion') return
@@ -285,9 +299,7 @@ const register_motion = (topic, payload_json) => {
 
     if(!room.motion_sensors) return
 
-    let sensor = room.motion_sensors.find(sensor => {
-      return sensor.topic === topic
-    })
+    let sensor = room.motion_sensors.find(sensor => sensor.topic === topic)
 
     if(!sensor) return false
 
@@ -305,6 +317,15 @@ const register_motion = (topic, payload_json) => {
   // Actions following motion detection => location update
   // This could be a callback
   update_location(matching_room.name)
+
+}
+
+const register_location = (topic, payload_json) => {
+
+  if (!payload_json?.location) return
+  if(!topic === 'location') return
+  console.log('[MQTT] location update')
+  update_location(payload_json.location)
 
 }
 
@@ -327,8 +348,9 @@ const update_location = (new_location) => {
 
   //  Check if new location is 'out'
   if(state.location === 'out'){
-    console.log('[Location] User is outside, turning AC off')
+    console.log('[Location] User is outside, turning everything off')
     turn_all_ac_off()
+    turn_all_lights_off()
   }
 
   // Deal with new room
@@ -368,11 +390,14 @@ mqtt_client.on('message', (topic, payload) => {
   }
 
 
-  // reister motion
+  // register motion
   register_motion(topic, payload_json)
 
   // Register illuminance
   register_illuminance(topic, payload_json)
+
+  // Direct location registration
+  register_location(topic, payload_json)
 })
 
 
