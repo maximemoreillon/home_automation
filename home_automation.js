@@ -2,9 +2,7 @@ const mqtt = require('mqtt')
 const express = require('express')
 const socketio = require('socket.io')
 const http = require('http')
-const bodyParser = require("body-parser")
 const cors = require('cors')
-const path = require('path')
 const dotenv = require('dotenv')
 const chalk = require('chalk')
 const pjson = require('./package.json')
@@ -15,8 +13,14 @@ dotenv.config()
 
 process.env.TZ = 'Asia/Tokyo'
 
+const {
+  APP_PORT = 80,
+  MQTT_USERNAME,
+  MQTT_PASSWORD,
+  MQTT_URL
+} = process.env
+
 // Parameters
-const port = process.env.APP_PORT || 80
 
 // Todo: Move this to a config file
 const lights_off_delay = 1*60*1000 // [ms]
@@ -24,11 +28,10 @@ const daylight_start_time = 6 // [h]
 const daylight_end_time = 17 // [h]
 const illuminance_threshold = 500
 const climate_control_off_delay = 30 * 60 * 1000 // [ms]
-
 //const climate_control_off_delay = 5 * 1000 // [ms]
 
 
-var state = require('./state.js')
+let state = require('./state.js')
 
 let lights_timeouts = {} // experimental: storing lights_timeouts
 let climate_control_timeouts = {}
@@ -39,10 +42,10 @@ const http_server = http.Server(app)
 const io = socketio(http_server)
 
 const mqtt_client  = mqtt.connect(
-  process.env.MQTT_URL,
+  MQTT_URL,
   {
-    username: process.env.MQTT_USERNAME,
-    password: process.env.MQTT_PASSWORD,
+    username: MQTT_USERNAME,
+    password: MQTT_PASSWORD,
   }
 )
 
@@ -51,7 +54,7 @@ exports.io = io
 exports.mqtt_client = mqtt_client
 
 
-app.use(bodyParser.json())
+app.use(express.json())
 app.use(cors())
 
 // Connect to MQTT
@@ -94,11 +97,9 @@ const switch_devices_of_rooms = ({room, device_type, state}) => {
 
   console.log(`[MQTT] turning ${device_type}(s) of ${chalk.yellow(room.name)} ${state}`)
 
-  devices.forEach( device => {
-    if(device.disabled) return
-    //mqtt_client.publish(light.topic, JSON.stringify(mqtt_payload))
-    mqtt_client.publish(device.topic, mqtt_payload, mqtt_options)
-  })
+  devices
+    .filter( ({disabled}) => !disabled)
+    .forEach( ({topic}) => mqtt_client.publish(topic, mqtt_payload, mqtt_options))
 
 }
 
@@ -112,11 +113,7 @@ const turn_all_ac_off = () => {
 
   rooms.forEach(room => {
 
-    switch_devices_of_rooms({
-      room,
-      state: 'OFF',
-      device_type: 'air_conditioners',
-    })
+    switch_devices_of_rooms({ room, state: 'OFF', device_type: 'air_conditioners' })
 
   })
 }
@@ -129,43 +126,32 @@ const turn_all_lights_off = () => {
 
   rooms.forEach(room => {
 
-    switch_devices_of_rooms({
-      room,
-      state: 'OFF',
-      device_type: 'lights',
-    })
+    switch_devices_of_rooms({ room, state: 'OFF', device_type: 'lights' })
 
   })
 }
 
 
-const lights_timeout_callback = (room) => {
+const lights_timeout_callback = (room) =>  () => {
   // Turn off after timeout expires
-  return () => {
-    switch_devices_of_rooms({
-      room,
-      state: 'OFF',
-      device_type: 'lights',
-    })
-  }
+  // Note the function returning a function
+  switch_devices_of_rooms({ room, state: 'OFF', device_type: 'lights' })
 }
 
-const climate_control_timeout_callback = (room) => {
+
+
+const climate_control_timeout_callback = (room) => () => {
   // Turn off after timeout expires
-  return () => {
-    switch_devices_of_rooms({
-      room,
-      state: 'OFF',
-      device_type: 'air_conditioners',
-    })
-  }
+  // Note the function returning a function
+  switch_devices_of_rooms({ room, state: 'OFF', device_type: 'air_conditioners', })
 }
+
 
 
 
 const turn_previous_room_lights_off = (previous_location) => {
   // Check if previous location is a room
-  let previous_room = rooms.find( ({name}) => name === previous_location )
+  const previous_room = rooms.find( ({name}) => name === previous_location )
 
   // if the previous location is not a room, do nothing
   if(!previous_room) return
@@ -179,7 +165,7 @@ const turn_previous_room_lights_off = (previous_location) => {
 
 const turn_previous_room_climate_control_off = (previous_location) => {
   // Check if previous location is a room
-  let previous_room = rooms.find( ({name}) => name === previous_location)
+  const previous_room = rooms.find( ({name}) => name === previous_location)
 
   // if the previous location is not a room, do nothing
   if(!previous_room) return
@@ -201,24 +187,17 @@ const turn_lights_on_in_current_room = (new_location) => {
   if(new_room.nightTimeOnly){
 
     // if illuminance data not available, turn lights on based on time of the day
-    if((new Date().getHours() <= daylight_start_time || new Date().getHours() >= daylight_end_time)){
+    const current_hour = new Date().getHours()
+    if ((current_hour <= daylight_start_time || current_hour >= daylight_end_time)){
       console.log(`[Location] Turning lights on in ${new_room.name} because of the time of the day`)
-      switch_devices_of_rooms({
-        room: new_room,
-        state: 'ON',
-        device_type: 'lights',
-      })
+      switch_devices_of_rooms({ room: new_room, state: 'ON', device_type: 'lights' })
     }
 
     // Turn lights on if illuminance is low
     else if(new_room.illuminance) {
       console.log(`[Location] Turning lights on in ${new_room.name} because of low illuminance`)
       if(new_room.illuminance < illuminance_threshold) {
-        switch_devices_of_rooms({
-          room: new_room,
-          state: 'ON',
-          device_type: 'lights',
-        })
+        switch_devices_of_rooms({ room: new_room, state: 'ON', device_type: 'lights' })
       }
     }
 
@@ -228,11 +207,7 @@ const turn_lights_on_in_current_room = (new_location) => {
   }
   else {
     console.log(`[Location] Turning lights on in ${new_room.name} regardless of time`)
-    switch_devices_of_rooms({
-      room: new_room,
-      state: 'ON',
-      device_type: 'lights',
-    })
+    switch_devices_of_rooms({ room: new_room, state: 'ON', device_type: 'lights' })
   }
 
   // clear timouts
@@ -246,7 +221,7 @@ const turn_lights_on_in_current_room = (new_location) => {
 
 const clear_timer_for_climate_control = (new_location) => {
 
-  let new_room = rooms.find(({ name }) => name === new_location)
+  const new_room = rooms.find(({ name }) => name === new_location)
 
   if(!new_room) return
 
@@ -262,16 +237,10 @@ const register_illuminance = (topic, payload_json) => {
   // Check what room the event was triggered from
   if(!payload_json?.illuminance) return
 
-  let matching_room = rooms.find( room => {
-
-    //if(!room.illuminance_topics) return false
-    //return room.illuminance_topics.includes(topic)
-
-    if(!room.illuminance_sensors) return
-
-    return room.illuminance_sensors.find(sensor => sensor.topic === topic)
-
-  })
+  
+  let matching_room = rooms
+    .filter(({ illuminance_sensors }) => !!illuminance_sensors)
+    .find(({ illuminance_sensors }) => illuminance_sensors.find(sensor => sensor.topic === topic) )
 
   // Do nothing if the room could not be found
   if(!matching_room) return
@@ -292,14 +261,11 @@ const register_motion = (topic, payload_json) => {
   if(payload_json.state !== 'motion') return
 
   // Check what room the event was triggered from
-  const matching_room = rooms.find( room => {
+  const matching_room = rooms
+    .filter(({ motion_sensors }) => !!motion_sensors)
+    .find( room => {
 
-    //if(!room.motion_sensor_topics) return false
-    //return room.motion_sensor_topics.includes(topic)
-
-    if(!room.motion_sensors) return
-
-    let sensor = room.motion_sensors.find(sensor => sensor.topic === topic)
+    const sensor = room.motion_sensors.find(sensor => sensor.topic === topic)
 
     if(!sensor) return false
 
@@ -440,8 +406,8 @@ io.on('connection', (socket) =>{
 })
 
 // Start the web server
-http_server.listen(port, () => {
-  console.log(`[Express] Home automation API listening on port ${port}`)
+http_server.listen(APP_PORT, () => {
+  console.log(`[Express] Home automation API listening on port ${APP_PORT}`)
 })
 
 exports.update_location = update_location
