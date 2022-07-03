@@ -4,17 +4,16 @@ module.exports = [
 
     // Experimental syntax
     motion_sensors: [
-      {topic: "motion/living/status", disabled: false},
-      {topic: "motion/living/ceiling/status", disabled: true},
+      { topic: "/moreillon/light-d084cb/motion", disabled: false },
     ],
     illuminance_sensors: [
-      {topic: 'illuminance/living/status'}
+      { topic: '/moreillon/light-d084cb/illuminance' }
     ],
     lights: [
-      {topic: "light/living/command", disabled: false}
+      { topic: "/moreillon/light-d084cb/command", disabled: false }
     ],
     air_conditioners: [
-      {topic: 'heater/living/command'}
+      { topic: 'heater/living/command' }
     ],
 
     nightTimeOnly: true,
@@ -32,17 +31,17 @@ module.exports = [
 
     // experimental
     motion_sensors: [
-      {topic: "motion/kitchen/status", disabled: false},
-      {topic: "motion/kitchen/ceiling/status", disabled: true},
+      { topic: "motion/kitchen/status", disabled: true },
+      { topic: "motion/kitchen/ceiling/status", disabled: false },
     ],
     illuminance_sensors: [
-      {topic: 'illuminance/kitchen/status'}
+      { topic: 'illuminance/kitchen/status' }
     ],
     lights: [
-      {topic: "light/kitchen/command", disabled: false}
+      { topic: "light/kitchen/command", disabled: false }
     ],
     air_conditioners: [
-      {topic: 'ac/kitchen/command'}
+      { topic: 'ac/kitchen/command' }
     ],
 
     // legacy topics
@@ -59,18 +58,22 @@ module.exports = [
 
     // experimental
     motion_sensors: [
-      {topic: "motion/corridor/status", disabled: false},
-      {topic: "motion/bathroom/status", disabled: false},
-      {topic: "motion/entrance/status", disabled: false},
+      { topic: "motion/corridor/status", disabled: true },
+      { topic: "motion/bathroom/status", disabled: true },
+      { topic: "motion/entrance/status", disabled: true },
+      { topic: "/moreillon/sensor-35a229/motion", disabled: false }, // Bathroom
+      { topic: "/moreillon/sensor-3054fc/motion", disabled: false }, // Entrance
     ],
     lights: [
-      {topic: "light/corridor/command", disabled: false},
-      {topic: "light/bathroom/command", disabled: false},
-      {topic: "light/entrance/command", disabled: false},
+      { topic: "light/corridor/command", disabled: false },
+      { topic: "light/bathroom/command", disabled: false },
+      { topic: "light/entrance/command", disabled: false },
     ],
 
+    /*
     motion_sensor_topics: ["motion/corridor/status","motion/bathroom/status","motion/entrance/status"],
     light_topics: ["light/corridor/command","light/bathroom/command","light/entrance/command"],
+    */
 
 
     nightTimeOnly: false,
@@ -80,10 +83,11 @@ module.exports = [
 
     // experimental
     motion_sensors: [
-      {topic: "motion/toilet/status", disabled: false},
+      { topic: "motion/toilet/status", disabled: true },
+      { topic: "/moreillon/sensor-35f3f0/motion", disabled: false },
     ],
     lights: [
-      {topic: "light/toilet/command", disabled: false}
+      { topic: "light/toilet/command", disabled: false }
     ],
 
     /*
@@ -98,17 +102,17 @@ module.exports = [
 
     // experimental
     motion_sensors: [
-      {topic: "motion/bedroom/status", disabled: false},
-      {topic: "motion/bedroom/ceiling/status", disabled: false},
+      { topic: "motion/bedroom/status", disabled: false },
+      { topic: "motion/bedroom/ceiling/status", disabled: false },
     ],
     illuminance_sensors: [
-      {topic: 'illuminance/bedroom/status'}
+      { topic: 'illuminance/bedroom/status' }
     ],
     lights: [
-      {topic: "light/bedroom/command", disabled: false}
+      { topic: "light/bedroom/command", disabled: false }
     ],
     air_conditioners: [
-      {topic: 'ac/bedroom/command'}
+      { topic: 'ac/bedroom/command' }
     ],
 
     /*
@@ -120,6 +124,4 @@ module.exports = [
 
     nightTimeOnly: true,
   },
-  
-  
 ];
