@@ -27,7 +27,6 @@ spec:
       containers:
       - name: ${APPLICATION_NAME}
         image: ${CONTAINER_IMAGE_TAGGED}
-        imagePullPolicy: Always # Ensures that k8s pulls a new image on restart
         ports:
         - containerPort: 80
         # Get environment variables from secret
@@ -36,7 +35,7 @@ spec:
            name: environment-variables
         # Mounth the config directory
         volumeMounts:
-        - mountPath: "/usr/src/app/config"
+        - mountPath: /usr/src/app/config
           name: ${APPLICATION_NAME}
       volumes:
       - name: ${APPLICATION_NAME}
