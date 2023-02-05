@@ -307,10 +307,7 @@ const update_state = (topic, payload_json) => {
   if (topic !== state_topic || !payload_json) return
 
   const { location, enabled } = payload_json
-  if (location) {
-    console.log("[MQTT] location update")
-    update_location(location)
-  }
+
   if (enabled) {
     if (enabled === "false") {
       console.log("[MQTT] Disabling automations")
@@ -319,6 +316,11 @@ const update_state = (topic, payload_json) => {
       console.log("[MQTT] Enabling automations")
       state.enabled = true
     }
+  }
+
+  if (location) {
+    console.log("[MQTT] location update")
+    update_location(location)
   }
 }
 
@@ -387,6 +389,7 @@ app.get("/", (req, res) => {
   res.send({
     application_name: "Maxime MOREILLON",
     version: pjson.version,
+    mqtt_urL: MQTT_URL,
   })
 })
 
