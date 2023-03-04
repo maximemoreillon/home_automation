@@ -306,6 +306,8 @@ const register_motion = (topic, payload_json) => {
 const update_state = (topic, payload_json) => {
   if (topic !== state_topic || !payload_json) return
 
+  // Problem: if disabled first, then automation to turn everything off won't work
+
   const { location, enabled } = payload_json
 
   if (enabled) {
@@ -336,15 +338,16 @@ const update_location = (new_location) => {
   // Websocket emit
   io.emit("location", state.location)
 
-  // Actions upon location update
-  if (!state.enabled) return console.log(`Automations disabled`)
-
   //  Check if new location is 'out'
+  // NOTE: taks priority over automations being disabled
   if (state.location === "out") {
     console.log("[Location] User is outside, turning everything off")
     turn_all_ac_off()
     turn_all_lights_off()
   }
+
+  // Actions upon location update
+  if (!state.enabled) return console.log(`Automations disabled`)
 
   // Deal with new room
   turn_lights_on_in_current_room(state.location)
