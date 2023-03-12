@@ -6,7 +6,7 @@ const cors = require("cors")
 const dotenv = require("dotenv")
 const chalk = require("chalk")
 const pjson = require("./package.json")
-
+const { set_enabled } = require("./controllers/enabled")
 const rooms = require("./config/rooms.js")
 
 const state_topic = "/home-automation/state"
@@ -311,13 +311,7 @@ const update_state = (topic, payload_json) => {
   const { location, enabled } = payload_json
 
   if (enabled) {
-    if (enabled === "false") {
-      console.log("[MQTT] Disabling automations")
-      state.enabled = false
-    } else if (enabled === "true") {
-      console.log("[MQTT] Enabling automations")
-      state.enabled = true
-    }
+    set_enabled(enabled === "true")
   }
 
   if (location) {

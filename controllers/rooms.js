@@ -1,5 +1,4 @@
-let rooms = require("../config/rooms.js")
-let io = require("../index.js").io
+const rooms = require("../config/rooms.js")
 
 exports.get_rooms = (req, res) => {
   res.send(rooms)
