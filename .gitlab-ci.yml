@@ -6,14 +6,11 @@ variables:
   APPLICATION_NAME: home-automation
   CONTAINER_IMAGE: ${DOCKER_HUB_USERNAME}/${APPLICATION_NAME}
   CONTAINER_IMAGE_TAGGED: ${CONTAINER_IMAGE}:${CI_COMMIT_SHORT_SHA}
-
-  CERTIFICATE_DOMAIN: api.automation.home.maximemoreillon.com
-
+  K8S_INGRESS_HOST: api.automation.home.maximemoreillon.com
 
 image: moreillon/ci-dind
 services:
   - name: docker:19.03.12-dind
-
 
 build:
   stage: build
@@ -32,7 +29,6 @@ build:
     # cleanup
     - docker image rm ${CONTAINER_IMAGE}
     - docker image rm ${CONTAINER_IMAGE_TAGGED}
-
 
 deploy:
   only:
