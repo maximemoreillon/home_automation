@@ -57,11 +57,11 @@ io.on("connection", async (socket: Socket) => {
     if (!token) throw "unauthorized"
     const headers = { authorization: `Bearer ${token}` }
     await axios.get(IDENTIFICATION_URL, { headers })
-    console.log("Socket authenticated")
+    console.log("[Websocket] Socket authenticated")
     socket.join("authenticated")
     socket.emit("location", getLocation())
   } catch (error) {
-    console.log("Unauthenticatd socket")
+    console.log("[Websocket] Unauthorized socket")
     socket.disconnect()
   }
 })
