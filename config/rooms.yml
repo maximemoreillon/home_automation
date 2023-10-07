@@ -17,3 +17,29 @@
       statusTopic: "/moreillon/light-a4c2f0/illuminance"
     - type: light
       commandTopic: "/moreillon/light-a4c2f0/command"
+
+- name: corridor
+  devices:
+    # Motion sensors
+    - type: motion sensor
+      statusTopic: "/moreillon/sensor-35a229/motion"
+    - type: motion sensor
+      statusTopic: "/moreillon/sensor-3054fc/motion"
+    # Lights
+    - type: light
+      commandTopic: "moreillon/light-2418e1/command"
+    - type: light
+      commandTopic: "/moreillon/light-d13efb/command"
+    - type: light
+      commandTopic: "/moreillon/light-c64739/command"
+    - type: light
+      commandTopic: "moreillon/light-c75e4a/command"
+
+- name: bedroom
+  devices:
+    - type: motion sensor
+      statusTopic: "motion/bedroom/status"
+    - type: illuminance sensor
+      statusTopic: "/moreillon/light-a4d3d9/illuminance"
+    - type: light
+      commandTopic: "/moreillon/light-a4d3d9/command"
