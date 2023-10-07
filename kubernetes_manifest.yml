@@ -36,6 +36,7 @@ data:
   rooms.yml: |
 
     - name: living
+      nightOnly: true
       devices:
         - type: motion sensor
           statusTopic: "/moreillon/light-d084cb/motion"
@@ -45,6 +46,7 @@ data:
           commandTopic: "/moreillon/light-d084cb/command"
 
     - name: kitchen
+      nightOnly: true
       devices:
         - type: motion sensor
           statusTopic: motion/kitchen/status
@@ -73,6 +75,7 @@ data:
           commandTopic: "moreillon/light-c75e4a/command"
 
     - name: bedroom
+      nightOnly: true
       devices:
         - type: motion sensor
           statusTopic: "motion/bedroom/status"
