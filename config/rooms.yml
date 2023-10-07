@@ -1,0 +1,19 @@
+- name: living
+  devices:
+    - type: motion sensor
+      statusTopic: "/moreillon/light-d084cb/motion"
+    - type: illuminance sensor
+      statusTopic: "/moreillon/light-d084cb/illuminance"
+    - type: light
+      commandTopic: "/moreillon/light-d084cb/command"
+
+- name: kitchen
+  devices:
+    - type: motion sensor
+      statusTopic: motion/kitchen/status
+    - type: motion sensor
+      statusTopic: "/moreillon/light-a4c2f0/motion"
+    - type: illuminance sensor
+      statusTopic: "/moreillon/light-a4c2f0/illuminance"
+    - type: light
+      commandTopic: "/moreillon/light-a4c2f0/command"
