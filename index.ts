@@ -42,6 +42,7 @@ app.use("/rooms", roomsRouter)
 
 io.on("connection", (socket: any) => {
   console.log("[Websocket] a user connected")
+  // TODO: auth
   socket.emit("location", getLocation())
 })
 

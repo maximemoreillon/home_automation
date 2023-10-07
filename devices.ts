@@ -54,7 +54,7 @@ export const register_illuminance = (topic: string, payload: any) => {
 
   if (!room) return
 
-  room.illuminance = illuminance
+  room.illuminance = Number(illuminance)
 }
 
 export const register_motion = (topic: string, { state }: any) => {
