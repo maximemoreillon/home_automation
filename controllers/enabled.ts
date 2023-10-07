@@ -8,7 +8,7 @@ export const get_enabled = (req: Request, res: Response) => {
 
 export const update_enabled = (req: Request, res: Response) => {
   const { enabled } = req.body
-  if (!enabled) throw createHttpError(400, "Enabled not defined")
+  if (enabled === undefined) throw createHttpError(400, "Enabled not defined")
   setEnabled(!!enabled)
   res.send(getEnabled())
 }

@@ -17,7 +17,11 @@ const { EXPRESS_PORT = 80, MQTT_URL } = process.env
 
 const app = express()
 const http_server = new http.Server(app)
-const io = new Server(http_server)
+const io = new Server(http_server, {
+  cors: {
+    origin: "*",
+  },
+})
 
 export const getIo = () => io
 
