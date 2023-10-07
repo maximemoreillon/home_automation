@@ -16,7 +16,7 @@ export const updateLocation = (new_location: string) => {
 
   console.log(`[Location] Location changed to ${chalk.yellow(location)}`)
 
-  getIo().emit("location", location)
+  getIo().to("authenticated").emit("location", location)
 
   // NOTE: takes priority over automations being disabled
   if (location === "out") {

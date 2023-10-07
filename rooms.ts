@@ -2,8 +2,6 @@ import fs from "fs"
 import YAML from "yaml"
 import { type Device, switch_devices_of_rooms } from "./devices"
 import {
-  state_topic,
-  timeoutDelay,
   daylight_start_time,
   daylight_end_time,
   illuminance_threshold,

@@ -7,5 +7,5 @@ export const setEnabled = (newEnabled: boolean) => {
   enabled = newEnabled
   if (enabled) console.log("[Enabled] Turning automations ON")
   else console.log("[Enabled] Turning automations Off")
-  getIo().emit("enabled", enabled)
+  getIo().to("authenticated").emit("enabled", enabled)
 }
