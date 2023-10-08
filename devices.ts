@@ -1,12 +1,6 @@
 import { Room, rooms } from "./rooms"
 import { mqtt_client } from "./mqtt"
-import {
-  state_topic,
-  timeoutDelay,
-  daylight_start_time,
-  daylight_end_time,
-  illuminance_threshold,
-} from "./config"
+import { timeoutDelay } from "./config"
 import { updateLocation } from "./userLocation"
 
 export interface Device {
@@ -63,7 +57,9 @@ export const register_motion = (topic: string, { state }: any) => {
   const room = rooms.find((r) =>
     r.devices.some((d) => d.statusTopic === topic && !d.disabled)
   )
-  if (room) updateLocation(room.name)
+  if (!room) return
+
+  updateLocation(room.name)
 }
 
 export const timeout_callback = (room: any) => () => {

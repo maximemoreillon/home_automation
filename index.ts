@@ -5,7 +5,7 @@ import express from "express"
 import { Server, Socket } from "socket.io"
 import http from "http"
 import cors from "cors"
-import pjson from "./package.json"
+import { version, author } from "./package.json"
 import { getLocation } from "./userLocation"
 import enabledRouter from "./routes/enabled"
 import locationRouter from "./routes/location"
@@ -29,15 +29,14 @@ const io = new Server(http_server, {
   },
 })
 
-export const getIo = () => io
-
 app.use(express.json())
 app.use(cors())
 
 app.get("/", (req, res) => {
   res.send({
-    application_name: "Maxime MOREILLON",
-    version: pjson.version,
+    application_name: "Home automation",
+    author,
+    version,
     mqtt_urL: MQTT_URL,
   })
 })
@@ -69,3 +68,5 @@ io.on("connection", async (socket: Socket) => {
 http_server.listen(EXPRESS_PORT, () => {
   console.log(`[Express] Listening on port ${EXPRESS_PORT}`)
 })
+
+export const getIo = () => io
