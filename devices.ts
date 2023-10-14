@@ -2,12 +2,13 @@ import { Room, rooms } from "./rooms"
 import { mqtt_client } from "./mqtt"
 import { timeoutDelay } from "./config"
 import { updateLocation } from "./userLocation"
+import { logger } from "./logger"
 
 export interface Device {
   type: string
   statusTopic?: string
   commandTopic?: string
-  disabled?: boolean
+  // disabled?: boolean
 }
 
 export const switch_devices_of_rooms = (
@@ -18,7 +19,7 @@ export const switch_devices_of_rooms = (
   const mqtt_payload = JSON.stringify({ state })
 
   room.devices
-    .filter((d: Device) => !d.disabled && d.type === type)
+    .filter((d: Device) => d.type === type)
     .forEach(({ commandTopic }: Device) => {
       console.log(
         `[MQTT] turning ${type} ${commandTopic} of ${room.name} ${state}`
@@ -42,9 +43,7 @@ export const register_illuminance = (topic: string, payload: any) => {
   const { illuminance } = payload
   if (!illuminance) return
 
-  const room = rooms.find((r) =>
-    r.devices.some((d) => d.statusTopic === topic && !d.disabled)
-  )
+  const room = rooms.find((r) => r.devices.some((d) => d.statusTopic === topic))
 
   if (!room) return
 
@@ -54,10 +53,12 @@ export const register_illuminance = (topic: string, payload: any) => {
 export const register_motion = (topic: string, { state }: any) => {
   if (!state || state !== "motion") return
 
-  const room = rooms.find((r) =>
-    r.devices.some((d) => d.statusTopic === topic && !d.disabled)
-  )
+  const room = rooms.find((r) => r.devices.some((d) => d.statusTopic === topic))
   if (!room) return
+
+  logger.info({
+    message: `Motion detected in ${room.name} by sensor ${topic}`,
+  })
 
   updateLocation(room.name)
 }

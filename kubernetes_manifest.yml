@@ -48,8 +48,8 @@ data:
     - name: kitchen
       nightOnly: true
       devices:
-        - type: motion sensor
-          statusTopic: motion/kitchen/status
+        # - type: motion sensor
+        #   statusTopic: motion/kitchen/status
         - type: motion sensor
           statusTopic: "/moreillon/light-a4c2f0/motion"
         - type: illuminance sensor

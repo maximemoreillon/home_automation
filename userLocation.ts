@@ -25,7 +25,7 @@ export const updateLocation = (new_location: string) => {
   }
 
   // Actions upon location update
-  if (!getEnabled()) return console.log(`Automations are disabled disabled`)
+  if (!getEnabled()) return console.log(`Automations are disabled`)
 
   turn_lights_on_in_current_room(location)
   setTimeoutForLightsOff(previousLocation)
