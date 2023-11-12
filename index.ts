@@ -12,6 +12,7 @@ import locationRouter from "./routes/location"
 import roomsRouter from "./routes/rooms"
 import auth from "@moreillon/express_identification_middleware"
 import axios from "axios"
+import promBundle from "express-prom-bundle"
 
 process.env.TZ = "Asia/Tokyo"
 
@@ -20,6 +21,8 @@ const {
   MQTT_URL,
   IDENTIFICATION_URL = "http://user-manager/users/self",
 } = process.env
+
+const promOptions = { includeMethod: true, includePath: true }
 
 const app = express()
 const http_server = new http.Server(app)
@@ -31,6 +34,7 @@ const io = new Server(http_server, {
 
 app.use(express.json())
 app.use(cors())
+app.use(promBundle(promOptions))
 
 app.get("/", (req, res) => {
   res.send({
