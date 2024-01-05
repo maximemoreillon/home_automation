@@ -7,6 +7,7 @@ import http from "http"
 import cors from "cors"
 import { version, author } from "./package.json"
 import { getLocation } from "./userLocation"
+import { LOKI_URL } from "./logger"
 import enabledRouter from "./routes/enabled"
 import locationRouter from "./routes/location"
 import roomsRouter from "./routes/rooms"
@@ -42,6 +43,7 @@ app.get("/", (req, res) => {
     author,
     version,
     mqtt_urL: MQTT_URL,
+    loki_url: LOKI_URL,
   })
 })
 
