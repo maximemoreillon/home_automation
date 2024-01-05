@@ -1,4 +1,4 @@
-import { Room, rooms } from "./rooms"
+import { type Room, rooms } from "./rooms"
 import { mqtt_client } from "./mqtt"
 import { timeoutDelay } from "./config"
 import { updateLocation } from "./userLocation"
@@ -34,7 +34,7 @@ export const switch_devices_of_rooms = (
 }
 
 export const turn_all_lights_off = () => {
-  rooms.forEach((room: any) => {
+  rooms.forEach((room: Room) => {
     switch_devices_of_rooms(room, "light", "OFF")
   })
 }
@@ -63,12 +63,12 @@ export const register_motion = (topic: string, { state }: any) => {
   updateLocation(room.name)
 }
 
-export const timeout_callback = (room: any) => () => {
+export const timeout_callback = (room: Room) => () => {
   switch_devices_of_rooms(room, "light", "OFF")
 }
 
 export const setTimeoutForLightsOff = (previousLocation: string) => {
-  const previous_room = rooms.find(({ name }: any) => name === previousLocation)
+  const previous_room = rooms.find(({ name }) => name === previousLocation)
 
   if (!previous_room) return
 

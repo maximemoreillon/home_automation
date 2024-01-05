@@ -19,16 +19,10 @@ build:
   before_script:
     - echo "${DOCKER_HUB_PASSWORD}" | docker login --username ${DOCKER_HUB_USERNAME} --password-stdin
   script:
-    # Building
     - docker build -t ${CONTAINER_IMAGE} .
-    # Tagging
     - docker tag ${CONTAINER_IMAGE} ${CONTAINER_IMAGE_TAGGED}
-    # Pushing
     - docker push ${CONTAINER_IMAGE}
     - docker push ${CONTAINER_IMAGE_TAGGED}
-    # cleanup
-    - docker image rm ${CONTAINER_IMAGE}
-    - docker image rm ${CONTAINER_IMAGE_TAGGED}
 
 deploy:
   only:

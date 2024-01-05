@@ -13,13 +13,14 @@ export interface Room {
   illuminance?: number
   nightOnly?: boolean
   timeout?: NodeJS.Timeout
+  illuminance_threshold?: number
 }
 
 const file = fs.readFileSync("./config/rooms.yml", "utf8")
 export const rooms: Room[] = YAML.parse(file)
 
 export const turn_lights_on_in_current_room = (new_location: string) => {
-  const room: any = rooms.find(({ name }) => name === new_location)
+  const room = rooms.find(({ name }) => name === new_location)
   if (!room) return
   if (room.nightOnly) {
     // if illuminance data not available, turn lights on based on time of the day
