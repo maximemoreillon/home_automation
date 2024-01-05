@@ -4,7 +4,7 @@ import { type Device, switch_devices_of_rooms } from "./devices"
 import {
   daylight_start_time,
   daylight_end_time,
-  illuminance_threshold,
+  default_illuminance_threshold,
 } from "./config"
 
 export interface Room {
@@ -36,6 +36,8 @@ export const turn_lights_on_in_current_room = (new_location: string) => {
 
     // Turn lights on if illuminance is low
     else if (room.illuminance) {
+      const illuminance_threshold =
+        room.illuminance_threshold || default_illuminance_threshold
       if (room.illuminance < illuminance_threshold) {
         console.log(
           `[Location] Turning lights on in ${room.name} because of low illuminance (${room.illuminance} < ${illuminance_threshold})`
