@@ -47,7 +47,7 @@ data:
 
     - name: kitchen
       nightOnly: true
-      illuminance_threshold: 400
+      illuminance_threshold: 600
       devices:
         # - type: motion sensor
         #   statusTopic: motion/kitchen/status
