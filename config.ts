@@ -1,6 +1,6 @@
 export const {
-  MQTT_STATE_TOPIC = "/home-automation/state",
-  MQTT_COMMAND_TOPIC = "/home-automation/command",
+  MQTT_STATE_TOPIC = "home-automation/state",
+  MQTT_COMMAND_TOPIC = "home-automation/command",
 } = process.env
 
 export const timeoutDelay = 1 * 60 * 1000 // [ms]
