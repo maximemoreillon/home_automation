@@ -1,5 +1,6 @@
 export const {
   MQTT_STATE_TOPIC = "home-automation/state",
+  MQTT_LOCATION_TOPIC = "home-automation/location",
   MQTT_COMMAND_TOPIC = "home-automation/command",
 } = process.env
 

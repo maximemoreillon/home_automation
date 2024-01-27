@@ -5,7 +5,7 @@ import { setTimeoutForLightsOff } from "./devices"
 import { turn_lights_on_in_current_room } from "./rooms"
 import { turn_all_lights_off } from "./devices"
 import { mqtt_client } from "./mqtt"
-import { MQTT_STATE_TOPIC } from "./config"
+import { MQTT_LOCATION_TOPIC } from "./config"
 
 let location = "unknown"
 
@@ -19,7 +19,7 @@ export const updateLocation = (new_location: string) => {
   console.log(`[Location] Location changed to ${chalk.yellow(location)}`)
 
   getIo().to("authenticated").emit("location", location)
-  mqtt_client.publish(MQTT_STATE_TOPIC, JSON.stringify({ location }))
+  mqtt_client.publish(MQTT_LOCATION_TOPIC, location)
 
   // NOTE: takes priority over automations being disabled
   if (location === "out") {

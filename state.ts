@@ -10,5 +10,5 @@ export const setEnabled = (newEnabled: boolean) => {
   if (enabled) console.log("[Enabled] Turning automations ON")
   else console.log("[Enabled] Turning automations Off")
   getIo().to("authenticated").emit("enabled", enabled)
-  mqtt_client.publish(MQTT_STATE_TOPIC, JSON.stringify({ enabled }))
+  mqtt_client.publish(MQTT_STATE_TOPIC, enabled ? "enabled" : "disabled")
 }
