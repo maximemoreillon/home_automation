@@ -2,7 +2,7 @@ import { connect } from "mqtt"
 import { rooms } from "./rooms"
 import { Room } from "./rooms"
 import { register_motion, register_illuminance } from "./devices"
-import { state_topic } from "./config"
+import { MQTT_COMMAND_TOPIC } from "./config"
 import { setEnabled } from "./state"
 import { updateLocation } from "./userLocation"
 
@@ -37,7 +37,7 @@ mqtt_client.on("message", (topic, payloadBuffer) => {
   register_motion(topic, payload)
   register_illuminance(topic, payload)
 
-  if (topic == state_topic) {
+  if (topic == MQTT_COMMAND_TOPIC) {
     // Problem: if disabled first, then automation to turn everything off won't work
     const { location, enabled } = payload
 
@@ -57,5 +57,5 @@ const subscribe_to_all = () => {
   })
 
   // Also subscribing to direct state update topic
-  mqtt_client.subscribe(state_topic)
+  mqtt_client.subscribe(MQTT_COMMAND_TOPIC)
 }
