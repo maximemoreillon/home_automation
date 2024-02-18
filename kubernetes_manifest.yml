@@ -40,11 +40,11 @@ data:
       illuminance_threshold: 600
       devices:
         - type: motion sensor
-          statusTopic: "/moreillon/light-d084cb/motion"
+          statusTopic: "moreillon/light-d084cb/motion"
         - type: illuminance sensor
-          statusTopic: "/moreillon/light-d084cb/illuminance"
+          statusTopic: "moreillon/light-d084cb/illuminance"
         - type: light
-          commandTopic: "/moreillon/light-d084cb/command"
+          commandTopic: "moreillon/light-d084cb/command"
 
     - name: kitchen
       nightOnly: true
