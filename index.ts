@@ -14,6 +14,8 @@ import roomsRouter from "./routes/rooms"
 import auth from "@moreillon/express_identification_middleware"
 import axios from "axios"
 import promBundle from "express-prom-bundle"
+import swaggerUi from "swagger-ui-express"
+import swaggerDocument from "./swagger-output.json"
 
 process.env.TZ = "Asia/Tokyo"
 
@@ -36,6 +38,7 @@ const io = new Server(http_server, {
 app.use(express.json())
 app.use(cors())
 app.use(promBundle(promOptions))
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument))
 
 app.get("/", (req, res) => {
   res.send({
