@@ -1,10 +1,9 @@
 import { connect } from "mqtt"
-import { rooms } from "./rooms"
-import { Room } from "./rooms"
 import { register_motion, register_illuminance } from "./devices"
 import { MQTT_COMMAND_TOPIC } from "./config"
 import { setEnabled } from "./state"
 import { updateLocation } from "./userLocation"
+import Room from "./models/room"
 
 export const {
   MQTT_USERNAME,
@@ -46,8 +45,10 @@ mqtt_client.on("message", (topic, payloadBuffer) => {
   }
 })
 
-const subscribe_to_all = () => {
-  rooms.forEach(({ devices }: Room) => {
+const subscribe_to_all = async () => {
+  const rooms = await Room.find()
+
+  rooms.forEach(({ devices }) => {
     devices.forEach(({ statusTopic }) => {
       if (statusTopic) {
         console.log(`[MQTT] Subscribing to ${statusTopic}`)

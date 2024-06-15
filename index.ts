@@ -2,6 +2,7 @@ import dotenv from "dotenv"
 dotenv.config()
 
 import express from "express"
+import "express-async-errors"
 import { Server, Socket } from "socket.io"
 import http from "http"
 import cors from "cors"

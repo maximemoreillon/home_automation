@@ -1,8 +1,8 @@
-import { type Room, rooms } from "./rooms"
 import { mqtt_client } from "./mqtt"
 import { timeoutDelay } from "./config"
 import { updateLocation } from "./userLocation"
 import { logger } from "./logger"
+import Room from "./models/room"
 
 export interface Device {
   type: string
@@ -12,7 +12,7 @@ export interface Device {
 }
 
 export const switch_devices_of_rooms = (
-  room: Room,
+  room: typeof Room,
   type: string,
   state: string
 ) => {
@@ -33,16 +33,19 @@ export const switch_devices_of_rooms = (
     })
 }
 
-export const turn_all_lights_off = () => {
-  rooms.forEach((room: Room) => {
-    switch_devices_of_rooms(room, "light", "OFF")
+export const turn_all_lights_off = async () => {
+  const rooms = await Room.find()
+  rooms.forEach((room) => {
+    switch_devices_of_rooms(room.toJSON(), "light", "OFF")
   })
 }
 
-export const register_illuminance = (topic: string, payload: any) => {
+export const register_illuminance = async (topic: string, payload: any) => {
   const { illuminance } = payload
   if (!illuminance) return
 
+  // TODO: elematch
+  const rooms = await Room.find()
   const room = rooms.find((r) => r.devices.some((d) => d.statusTopic === topic))
 
   if (!room) return
@@ -53,6 +56,8 @@ export const register_illuminance = (topic: string, payload: any) => {
 export const register_motion = (topic: string, { state }: any) => {
   if (!state || state !== "motion") return
 
+  // TODO: elematch
+  const rooms = await Room.find()
   const room = rooms.find((r) => r.devices.some((d) => d.statusTopic === topic))
   if (!room) return
 
