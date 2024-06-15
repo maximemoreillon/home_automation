@@ -68,21 +68,21 @@ export const register_motion = (topic: string, { state }: any) => {
   updateLocation(room.name)
 }
 
-export const timeout_callback = (room: Room) => () => {
-  switch_devices_of_rooms(room, "light", "OFF")
-}
+// export const timeout_callback = (room: Room) => () => {
+//   switch_devices_of_rooms(room, "light", "OFF")
+// }
 
-export const setTimeoutForLightsOff = (previousLocation: string) => {
-  const previous_room = rooms.find(({ name }) => name === previousLocation)
+// export const setTimeoutForLightsOff = (previousLocation: string) => {
+//   const previous_room = rooms.find(({ name }) => name === previousLocation)
 
-  if (!previous_room) return
+//   if (!previous_room) return
 
-  console.log(
-    `[Timer] Setting ${timeoutDelay}ms timer for ${previous_room.name} lights to turn OFF`
-  )
+//   console.log(
+//     `[Timer] Setting ${timeoutDelay}ms timer for ${previous_room.name} lights to turn OFF`
+//   )
 
-  previous_room.timeout = setTimeout(
-    timeout_callback(previous_room),
-    timeoutDelay
-  )
-}
+//   previous_room.timeout = setTimeout(
+//     timeout_callback(previous_room),
+//     timeoutDelay
+//   )
+// }

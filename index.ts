@@ -1,12 +1,14 @@
 import dotenv from "dotenv"
 dotenv.config()
 
+import { version, author } from "./package.json"
+console.log(`Home automation v${version}`)
+
 import express from "express"
 import "express-async-errors"
 import { Server, Socket } from "socket.io"
 import http from "http"
 import cors from "cors"
-import { version, author } from "./package.json"
 import { getLocation } from "./userLocation"
 import { LOKI_URL } from "./logger"
 import enabledRouter from "./routes/enabled"

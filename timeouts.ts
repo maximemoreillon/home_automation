@@ -1,2 +1,1 @@
-// TODO: make this a map
-export const timeouts = {}
+export const timeouts = new Map<String, NodeJS.Timeout>()

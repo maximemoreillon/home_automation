@@ -39,7 +39,8 @@ const roomSchema = new Schema(
           })
       },
       clearTimeout() {
-        const timeout = timeouts[this._id]
+        const _id = this._id.toString()
+        const timeout = timeouts.get(_id)
         if (timeout) {
           console.log(`[Timer] clearing lights timeout for ${this.name}`)
           clearTimeout(timeout)
