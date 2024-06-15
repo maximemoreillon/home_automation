@@ -63,12 +63,11 @@ data:
       devices:
         # Motion sensors
         - type: motion sensor
-          statusTopic: "/moreillon/sensor-35a229/motion"
-        # This one is dead, RIP
-        # - type: motion sensor
-        #   statusTopic: "/moreillon/sensor-3054fc/motion"
+          statusTopic: /moreillon/sensor-35a229/motion
         - type: motion sensor
-          statusTopic: moreillon/sensor-db122f/motion
+          statusTopic: /moreillon/sensor-35f3f0/motion # bathroom
+        - type: motion sensor
+          statusTopic: moreillon/sensor-db122f/motion # ?
         # Lights
         - type: light
           commandTopic: "moreillon/light-2418e1/command"
