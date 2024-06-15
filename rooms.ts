@@ -5,7 +5,7 @@ import {
   default_illuminance_threshold,
 } from "./config"
 import Room from "./models/room"
-import { timeouts } from "./timeouts"
+
 // export interface Room {
 //   name: string
 //   devices: Device[]
@@ -14,9 +14,6 @@ import { timeouts } from "./timeouts"
 //   timeout?: NodeJS.Timeout
 //   illuminance_threshold?: number
 // }
-
-// const file = fs.readFileSync("./config/rooms.yml", "utf8")
-// export const rooms: Room[] = YAML.parse(file)
 
 export const turn_lights_on_in_current_room = async (new_location: string) => {
   const room = await Room.findOne({ name: new_location })

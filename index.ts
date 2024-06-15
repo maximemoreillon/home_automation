@@ -19,7 +19,7 @@ import axios from "axios"
 import promBundle from "express-prom-bundle"
 import swaggerUi from "swagger-ui-express"
 import swaggerDocument from "./swagger-output.json"
-
+import { connect as dbConnect } from "./db"
 process.env.TZ = "Asia/Tokyo"
 
 const {
@@ -29,6 +29,8 @@ const {
 } = process.env
 
 const promOptions = { includeMethod: true, includePath: true }
+
+dbConnect()
 
 const app = express()
 const http_server = new http.Server(app)

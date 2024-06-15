@@ -11,7 +11,7 @@ const deviceSchema = new Schema({
 
 const roomSchema = new Schema(
   {
-    name: { type: String, required: true },
+    name: { type: String, required: true, unique: true },
 
     nightOnly: Boolean,
     illuminance: Number,
@@ -21,7 +21,7 @@ const roomSchema = new Schema(
   },
   {
     methods: {
-      switchDevices(type: string, state: string) {
+      switchDevices(type: "light", state: "ON" | "OFF") {
         const mqtt_payload = JSON.stringify({ state })
 
         this.devices
