@@ -46,9 +46,7 @@ export const register_illuminance = async (topic: string, payload: any) => {
   const { illuminance } = payload
   if (!illuminance) return
 
-  // TODO: elematch
-  const rooms = await Room.find()
-  const room = rooms.find((r) => r.devices.some((d) => d.statusTopic === topic))
+  const room = await Room.findOne({ "devices.statusTopic": topic })
 
   if (!room) return
 
@@ -60,10 +58,18 @@ export const register_illuminance = async (topic: string, payload: any) => {
 export const register_motion = async (topic: string, { state }: any) => {
   if (!state || state !== "motion") return
 
-  // TODO: elematch
-  const rooms = await Room.find()
-  const room = rooms.find((r) => r.devices.some((d) => d.statusTopic === topic))
+  const room = await Room.findOne({ "devices.statusTopic": topic })
   if (!room) return
+
+  const device = room.devices.find((d) => d.statusTopic === topic)
+  if (!device) {
+    console.log(`Device with topic ${topic} not found in room ${room.name}`)
+    return
+  }
+  if (!device.enabled) {
+    console.log(`Device with topic ${topic} is disabled`)
+    return
+  }
 
   logger.info({
     message: `Motion detected in ${room.name} by sensor ${topic}`,
@@ -79,7 +85,9 @@ export const register_motion = async (topic: string, { state }: any) => {
 export const setTimeoutForLightsOff = async (previousLocation: string) => {
   const previous_room = await Room.findOne({ name: previousLocation })
   if (!previous_room) {
-    console.log(`Room ${previous_room} not found`)
+    console.log(
+      `Room ${previous_room} not found, skipping setting lights off timer`
+    )
     return
   }
 

@@ -5,6 +5,7 @@ import { timeouts } from "../timeouts"
 const deviceSchema = new Schema({
   name: String,
   type: String,
+  enabled: { type: Boolean, default: true },
   statusTopic: String,
   commandTopic: String,
 })

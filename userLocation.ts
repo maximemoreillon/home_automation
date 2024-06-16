@@ -21,6 +21,7 @@ export const updateLocation = (new_location: string) => {
   getIo().to("authenticated").emit("location", location)
   mqtt_client.publish(MQTT_LOCATION_TOPIC, location)
 
+  // "out" is a special reserved location
   // NOTE: takes priority over automations being disabled
   if (location === "out") {
     console.log("[Location] User is outside, turning everything off")
@@ -31,5 +32,6 @@ export const updateLocation = (new_location: string) => {
   if (!getEnabled()) return console.log(`Automations are disabled`)
 
   turn_lights_on_in_current_room(location)
-  setTimeoutForLightsOff(previousLocation)
+
+  if (previousLocation) setTimeoutForLightsOff(previousLocation)
 }

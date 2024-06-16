@@ -18,7 +18,10 @@ import Room from "./models/room"
 export const turn_lights_on_in_current_room = async (new_location: string) => {
   const room = await Room.findOne({ name: new_location })
   // const room = rooms.find(({ name }) => name === new_location)
-  if (!room) return
+  if (!room) {
+    console.log(`Room ${new_location} not found, cannot turn lights ON`)
+    return
+  }
   if (room.nightOnly) {
     // if illuminance data not available, turn lights on based on time of the day
     const current_hour = new Date().getHours()
