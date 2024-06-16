@@ -6,7 +6,6 @@ import { timeouts } from "./timeouts"
 export const turn_all_lights_off = async () => {
   const rooms = await Room.find()
   rooms.forEach((room) => {
-    // switch_devices_of_rooms(room.toJSON(), "light", "OFF")
     room.switchDevices("light", "OFF")
   })
 }
@@ -43,10 +42,6 @@ export const register_motion = async (topic: string, { state }: any) => {
   updateLocation(room.name)
 }
 
-// export const timeout_callback = (room: Room) => () => {
-//   switch_devices_of_rooms(room, "light", "OFF")
-// }
-
 export const setTimeoutForLightsOff = async (previousLocation: string) => {
   const previous_room = await Room.findOne({ name: previousLocation })
   if (!previous_room) {
@@ -65,9 +60,4 @@ export const setTimeoutForLightsOff = async (previousLocation: string) => {
     previous_room.switchDevices("light", "OFF")
   }, timeoutDelay)
   timeouts.set(_id.toString(), timeout)
-
-  // previous_room.timeout = setTimeout(
-  //   timeout_callback(previous_room),
-  //   timeoutDelay
-  // )
 }

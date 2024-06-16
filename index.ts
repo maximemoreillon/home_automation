@@ -19,7 +19,10 @@ import axios from "axios"
 import promBundle from "express-prom-bundle"
 import swaggerUi from "swagger-ui-express"
 import swaggerDocument from "./swagger-output.json"
-import { connect as dbConnect } from "./db"
+import {
+  connect as dbConnect,
+  redactedConnectionString as mongodbConnectionString,
+} from "./db"
 process.env.TZ = "Asia/Tokyo"
 
 const {
@@ -52,6 +55,7 @@ app.get("/", (req, res) => {
     version,
     mqtt_urL: MQTT_URL,
     loki_url: LOKI_URL,
+    mongodb_urL: mongodbConnectionString,
   })
 })
 
