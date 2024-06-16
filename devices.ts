@@ -1,38 +1,7 @@
-// import { mqtt_client } from "./mqtt"
 import { timeoutDelay } from "./config"
 import { updateLocation } from "./userLocation"
-import { logger } from "./logger"
 import Room from "./models/room"
 import { timeouts } from "./timeouts"
-
-// export interface Device {
-//   type: string
-//   statusTopic?: string
-//   commandTopic?: string
-//   // disabled?: boolean
-// }
-
-// export const switch_devices_of_rooms = (
-//   room: typeof Room,
-//   type: string,
-//   state: string
-// ) => {
-//   const mqtt_payload = JSON.stringify({ state })
-
-//   room.devices
-//     .filter((d: Device) => d.type === type)
-//     .forEach(({ commandTopic }: Device) => {
-//       console.log(
-//         `[MQTT] turning ${type} ${commandTopic} of ${room.name} ${state}`
-//       )
-//       if (commandTopic)
-//         mqtt_client.publish(commandTopic, mqtt_payload, {
-//           qos: 1,
-
-//           retain: true,
-//         })
-//     })
-// }
 
 export const turn_all_lights_off = async () => {
   const rooms = await Room.find()
@@ -70,10 +39,6 @@ export const register_motion = async (topic: string, { state }: any) => {
     console.log(`Device with topic ${topic} is disabled`)
     return
   }
-
-  logger.info({
-    message: `Motion detected in ${room.name} by sensor ${topic}`,
-  })
 
   updateLocation(room.name)
 }

@@ -4,7 +4,7 @@ import { MQTT_COMMAND_TOPIC } from "./config"
 import { setEnabled } from "./state"
 import { updateLocation } from "./userLocation"
 import Room from "./models/room"
-import mongoose from "mongoose"
+import { get_state as get_mongodb_state } from "./db"
 
 export const {
   MQTT_USERNAME,
@@ -48,10 +48,9 @@ mqtt_client.on("message", (topic, payloadBuffer) => {
 })
 
 export const subscribe_to_all = async () => {
-  // TODO: retry if MongoDB not connected
-  if (mongoose.connection.readyState !== 2) {
-    console.log(`[MQTT] MongoDB not connected, retrying in 5s`)
-    setTimeout(subscribe_to_all, 5000)
+  if (get_mongodb_state() !== 1) {
+    console.log(`[MQTT] MongoDB not connected, retrying in 3s`)
+    setTimeout(subscribe_to_all, 3000)
     return
   }
 

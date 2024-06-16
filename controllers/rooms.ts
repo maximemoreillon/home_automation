@@ -1,9 +1,6 @@
 import { Request, Response } from "express"
 import Room from "../models/room"
 import { subscribe_to_all } from "../mqtt"
-// export const readRooms = (req: Request, res: Response) => {
-//   res.send(rooms.map(({ timeout, ...r }) => r))
-// }
 
 export const createRoom = async (req: Request, res: Response) => {
   const { name } = req.body
