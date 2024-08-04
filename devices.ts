@@ -13,13 +13,17 @@ export interface Device {
 
 export const switch_devices_of_rooms = (
   room: Room,
-  type: string,
+  type: string | undefined,
   state: string
 ) => {
   const mqtt_payload = JSON.stringify({ state })
 
   room.devices
-    .filter((d: Device) => d.type === type)
+    .filter((d: Device) => {
+      if (!d.commandTopic) return false
+      if (type === undefined) return true
+      return d.type === type
+    })
     .forEach(({ commandTopic }: Device) => {
       console.log(
         `[MQTT] turning ${type} ${commandTopic} of ${room.name} ${state}`
@@ -27,7 +31,6 @@ export const switch_devices_of_rooms = (
       if (commandTopic)
         mqtt_client.publish(commandTopic, mqtt_payload, {
           qos: 1,
-
           retain: true,
         })
     })
@@ -36,6 +39,12 @@ export const switch_devices_of_rooms = (
 export const turn_all_lights_off = () => {
   rooms.forEach((room: Room) => {
     switch_devices_of_rooms(room, "light", "OFF")
+  })
+}
+
+export const turn_all_devices_off = () => {
+  rooms.forEach((room: Room) => {
+    switch_devices_of_rooms(room, undefined, "OFF")
   })
 }
 

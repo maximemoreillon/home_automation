@@ -1,7 +1,7 @@
 import { getIo } from "."
 import { getEnabled } from "./state"
 import chalk from "chalk"
-import { setTimeoutForLightsOff } from "./devices"
+import { setTimeoutForLightsOff, turn_all_devices_off } from "./devices"
 import { turn_lights_on_in_current_room } from "./rooms"
 import { turn_all_lights_off } from "./devices"
 import { mqtt_client } from "./mqtt"
@@ -24,7 +24,7 @@ export const updateLocation = (new_location: string) => {
   // NOTE: takes priority over automations being disabled
   if (location === "out") {
     console.log("[Location] User is outside, turning everything off")
-    turn_all_lights_off()
+    turn_all_devices_off()
   }
 
   // Actions upon location update
