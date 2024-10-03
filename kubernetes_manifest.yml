@@ -20,7 +20,7 @@ spec:
           envFrom:
             - secretRef:
                 name: environment-variables
-            -secretRef:
+            - secretRef:
                 name: auth0-env
           volumeMounts:
             - mountPath: /usr/src/app/config
