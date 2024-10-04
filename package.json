@@ -2,7 +2,7 @@
   "name": "home_automation",
   "version": "1.4.2",
   "description": "",
-  "main": "./build/index.js",
+  "main": "build/index.js",
   "scripts": {
     "dev": "nodemon index.ts",
     "build": "tsc --outdir ./build -p . ",
