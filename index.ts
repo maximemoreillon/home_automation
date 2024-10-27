@@ -12,16 +12,14 @@ import { MQTT_URL } from "./mqtt"
 import enabledRouter from "./routes/enabled"
 import locationRouter from "./routes/location"
 import roomsRouter from "./routes/rooms"
-import legacyAuth from "@moreillon/express_identification_middleware"
-import oidcAuth from "@moreillon/express-oidc"
 import promBundle from "express-prom-bundle"
 import swaggerUi from "swagger-ui-express"
 import swaggerDocument from "./swagger-output.json"
 import {
+  expressAuthMiddleware,
   IDENTIFICATION_URL,
   OIDC_JWKS_URI,
-  verifyJwtLegacy,
-  verifyJwtWithJwks,
+  wsAuth,
 } from "./auth"
 process.env.TZ = "Asia/Tokyo"
 
@@ -39,8 +37,8 @@ const io = new Server(http_server, {
 
 app.use(express.json())
 app.use(cors())
-app.use(promBundle(promOptions))
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument))
+app.use(promBundle(promOptions))
 
 app.get("/", (req, res) => {
   res.send({
@@ -56,13 +54,7 @@ app.get("/", (req, res) => {
   })
 })
 
-if (OIDC_JWKS_URI) {
-  console.log(`[Auth] Enabling OIDC auth with ${OIDC_JWKS_URI}`)
-  app.use(oidcAuth({ jwksUri: OIDC_JWKS_URI }))
-} else if (IDENTIFICATION_URL) {
-  console.log(`[Auth] Enabling AUTH auth with ${IDENTIFICATION_URL}`)
-  app.use(legacyAuth({ url: IDENTIFICATION_URL }))
-}
+app.use(expressAuthMiddleware)
 app.use("/location", locationRouter)
 app.use("/enabled", enabledRouter)
 app.use("/rooms", roomsRouter)
@@ -72,16 +64,7 @@ io.on("connection", async (socket: Socket) => {
 
   if (!IDENTIFICATION_URL && !OIDC_JWKS_URI) return
   try {
-    const authHeader = socket.handshake.headers?.authorization
-    if (!authHeader) throw new Error("unauthorized")
-    const token = authHeader?.split(" ")[1]
-    if (!token) throw new Error("unauthorized")
-
-    if (OIDC_JWKS_URI) await verifyJwtWithJwks(token)
-    else if (IDENTIFICATION_URL) await verifyJwtLegacy(token)
-
-    console.log("[Websocket] Socket authenticated")
-    socket.join("authenticated")
+    await wsAuth(socket)
     socket.emit("location", getLocation())
   } catch (error) {
     console.log("[Websocket] Unauthorized socket")
@@ -94,3 +77,7 @@ http_server.listen(EXPRESS_PORT, () => {
 })
 
 export const getIo = () => io
+
+app.listen(EXPRESS_PORT, () => {
+  console.log(`[Express] Listening on port ${EXPRESS_PORT}`)
+})
