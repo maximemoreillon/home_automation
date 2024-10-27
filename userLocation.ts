@@ -1,9 +1,8 @@
-import { getIo } from "."
+import { getIo } from "./server"
 import { getEnabled } from "./state"
 import chalk from "chalk"
 import { setTimeoutForLightsOff, turn_all_devices_off } from "./devices"
 import { turn_lights_on_in_current_room } from "./rooms"
-import { turn_all_lights_off } from "./devices"
 import { mqtt_client } from "./mqtt"
 import { MQTT_LOCATION_TOPIC } from "./config"
 

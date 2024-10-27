@@ -1,4 +1,4 @@
-import { getIo } from "./"
+import { getIo } from "./server"
 import { MQTT_STATE_TOPIC } from "./config"
 import { mqtt_client } from "./mqtt"
 
