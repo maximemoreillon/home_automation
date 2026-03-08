@@ -1,7 +1,3 @@
-stages:
-  - build
-  - deploy
-
 variables:
   APPLICATION_NAME: home-automation
   CONTAINER_IMAGE: ${DOCKER_HUB_USERNAME}/${APPLICATION_NAME}
@@ -12,7 +8,7 @@ image: moreillon/ci-dind
 services:
   - name: docker:24.0.7-dind
 
-build:
+build-job:
   stage: build
   before_script:
     - echo "${DOCKER_HUB_PASSWORD}" | docker login --username ${DOCKER_HUB_USERNAME} --password-stdin
@@ -22,7 +18,7 @@ build:
     - docker push ${CONTAINER_IMAGE}
     - docker push ${CONTAINER_IMAGE_TAGGED}
 
-deploy:
+deploy-job:
   only:
     - master
   stage: deploy

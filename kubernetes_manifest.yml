@@ -17,11 +17,14 @@ spec:
       containers:
         - name: ${APPLICATION_NAME}
           image: ${CONTAINER_IMAGE_TAGGED}
+          env:
+            - name: MQTT_URL
+              value: mqtt://mqtt.mqtt
           envFrom:
             - secretRef:
-                name: environment-variables
-            - secretRef:
-                name: auth0-env
+                name: home-automation-env-from-vault
+            # - secretRef:
+            #     name: auth0-env
           volumeMounts:
             - mountPath: /usr/src/app/config
               name: ${APPLICATION_NAME}
@@ -66,3 +69,25 @@ spec:
 #                 name: ${APPLICATION_NAME}
 #                 port:
 #                   number: 80
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: home-automation-env
+spec:
+  refreshInterval: 5m0s
+  secretStoreRef:
+    name: vault
+    kind: ClusterSecretStore
+  target:
+    name: home-automation-env-from-vault
+    creationPolicy: Orphan
+  data:
+    - secretKey: MQTT_USERNAME
+      remoteRef:
+        key: mqtt
+        property: USERNAME
+    - secretKey: MQTT_PASSWORD
+      remoteRef:
+        key: mqtt
+        property: PASSWORD
